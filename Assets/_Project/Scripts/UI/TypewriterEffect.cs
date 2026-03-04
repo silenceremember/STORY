@@ -9,18 +9,16 @@ using Story.Data;
 namespace Story.UI
 {
     /// <summary>
-    /// Typewriter-эффект для одного TMP_Text.
+    /// Typewriter-эффект. Вешается прямо на GameObject с TMP_Text.
     ///
-    /// Fire-and-forget API: Play(), Erase(), PlayAndErase()
-    /// Awaitable API:       PlayAsync(), EraseCurrentAsync()
+    /// Fire-and-forget API: Play(), Erase(), Clear(), Skip()
+    /// Awaitable API:       PlayAsync(), PlayCurrentAsync(), EraseCurrentAsync()
     ///
     /// Весь текст автоматически приводится к UPPER CASE.
     /// </summary>
+    [RequireComponent(typeof(TMP_Text))]
     public class TypewriterEffect : MonoBehaviour
     {
-        [Header("Target")]
-        [SerializeField] private TMP_Text targetText;
-
         [Header("Config")]
         [SerializeField] private TypewriterConfigSO config;
 
@@ -31,24 +29,36 @@ namespace Story.UI
         private float  FadeDuration => config.fadeDuration;
 
         // ── State ─────────────────────────────────────────────────────────
+        private TMP_Text                 _text;
+        private string                   _originalText;  // текст из сцены, сохраняется до Awake-очистки
         private CancellationTokenSource _cts;
         public  bool IsRunning { get; private set; }
+
+        // ── Unity lifecycle ───────────────────────────────────────────────
+        private void Awake()
+        {
+            _text = GetComponent<TMP_Text>();
+            _originalText = _text.text;     // сохраняем до очистки
+            _text.text    = string.Empty;   // скрываем до первого Play
+        }
+
+        private void OnDisable() => CancelInternal();
+        private void OnDestroy() => CancelInternal();
 
         // ── Fire-and-forget API ───────────────────────────────────────────
 
         public void Play(string text)
         {
             CancelInternal();
-            if (targetText == null) return;
             _cts = new CancellationTokenSource();
             TypeCoreAsync(Sanitize(text), _cts.Token).SuppressCancellationThrow().Forget();
         }
 
         public void Erase()
         {
-            var current = targetText?.text ?? string.Empty;
+            var current = _text.text;
             CancelInternal();
-            if (targetText == null || string.IsNullOrEmpty(current)) return;
+            if (string.IsNullOrEmpty(current)) return;
             _cts = new CancellationTokenSource();
             EraseCoreAsync(current, _cts.Token).SuppressCancellationThrow().Forget();
         }
@@ -56,54 +66,46 @@ namespace Story.UI
         public void Clear()
         {
             CancelInternal();
-            if (targetText == null) return;
-            DOTween.Kill(targetText);
-            targetText.text  = string.Empty;
-            targetText.alpha = 1f;
+            DOTween.Kill(_text);
+            _text.text  = string.Empty;
+            _text.alpha = 1f;
         }
 
         public void Skip(string fullText = null)
         {
             CancelInternal();
-            if (targetText == null) return;
-            DOTween.Kill(targetText);
-            if (fullText != null) targetText.text = Sanitize(fullText);
-            targetText.alpha = 1f;
+            DOTween.Kill(_text);
+            if (fullText != null) _text.text = Sanitize(fullText);
+            _text.alpha = 1f;
         }
 
         public void Cancel() => CancelInternal();
 
-        // ── Awaitable API (используется из async game loop) ───────────────
+        // ── Awaitable API ─────────────────────────────────────────────────
 
         /// <summary>Написать текст. Бросает OperationCanceledException при отмене.</summary>
         public UniTask PlayAsync(string text, CancellationToken ct = default)
         {
             CancelInternal();
-            if (targetText == null) return UniTask.CompletedTask;
             return TypeCoreAsync(Sanitize(text), ct);
         }
 
-        /// <summary>Напечатать текст, уже стоящий на targetText (задаётся в сцене).</summary>
+        /// <summary>Напечатать текст, заданный на компоненте в сцене (сохранён до Awake-очистки).</summary>
         public UniTask PlayCurrentAsync(CancellationToken ct = default)
         {
-            var text = targetText != null ? targetText.text : string.Empty;
             CancelInternal();
-            if (targetText == null || string.IsNullOrEmpty(text)) return UniTask.CompletedTask;
-            return TypeCoreAsync(Sanitize(text), ct);
+            if (string.IsNullOrEmpty(_originalText)) return UniTask.CompletedTask;
+            return TypeCoreAsync(Sanitize(_originalText), ct);
         }
 
         /// <summary>Стереть текущий текст. Бросает OperationCanceledException при отмене.</summary>
         public UniTask EraseCurrentAsync(CancellationToken ct = default)
         {
-            var current = targetText?.text ?? string.Empty;
+            var current = _text.text;
             CancelInternal();
-            if (targetText == null || string.IsNullOrEmpty(current)) return UniTask.CompletedTask;
+            if (string.IsNullOrEmpty(current)) return UniTask.CompletedTask;
             return EraseCoreAsync(current, ct);
         }
-
-        // ── Unity lifecycle ───────────────────────────────────────────────
-        private void OnDisable() => CancelInternal();
-        private void OnDestroy() => CancelInternal();
 
         // ── Internal ──────────────────────────────────────────────────────
 
@@ -122,14 +124,14 @@ namespace Story.UI
         private async UniTask TypeCoreAsync(string text, CancellationToken ct)
         {
             IsRunning = true;
-            targetText.text  = string.Empty;
-            targetText.alpha = 1f;
+            _text.text  = string.Empty;
+            _text.alpha = 1f;
             try
             {
                 for (int i = 0; i <= text.Length; i++)
                 {
                     ct.ThrowIfCancellationRequested();
-                    targetText.text = text[..i];
+                    _text.text = text[..i];
                     if (i < text.Length)
                         await UniTask.Delay(TimeSpan.FromSeconds(CharDelay), cancellationToken: ct);
                 }
@@ -144,7 +146,7 @@ namespace Story.UI
             {
                 if (UseFadeErase)
                 {
-                    var tween = targetText.DOFade(0f, FadeDuration).SetEase(Ease.InQuad);
+                    var tween = _text.DOFade(0f, FadeDuration).SetEase(Ease.InQuad);
                     try
                     {
                         await UniTask.Delay(TimeSpan.FromSeconds(FadeDuration), cancellationToken: ct);
@@ -154,15 +156,15 @@ namespace Story.UI
                         tween.Kill();
                         throw;
                     }
-                    targetText.text  = string.Empty;
-                    targetText.alpha = 1f;
+                    _text.text  = string.Empty;
+                    _text.alpha = 1f;
                 }
                 else
                 {
                     for (int i = text.Length; i >= 0; i--)
                     {
                         ct.ThrowIfCancellationRequested();
-                        targetText.text = text[..i];
+                        _text.text = text[..i];
                         if (i > 0)
                             await UniTask.Delay(TimeSpan.FromSeconds(EraseDelay), cancellationToken: ct);
                     }

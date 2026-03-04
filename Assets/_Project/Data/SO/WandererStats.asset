@@ -15,6 +15,6 @@ MonoBehaviour:
   maxHealth: 100
   maxSupplies: 100
   maxSanity: 100
-  startHealth: 100
-  startSupplies: 100
-  startSanity: 100
+  startHealth: 5
+  startSupplies: 5
+  startSanity: 5

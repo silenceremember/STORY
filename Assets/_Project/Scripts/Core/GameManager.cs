@@ -38,6 +38,7 @@ namespace Story
 
         [Header("Restart (Game Over)")]
         [SerializeField] private TypewriterEffect restartTypewriter;
+        [SerializeField] private GameObject       restartPanel;
         [SerializeField] private TextButton       restartButton;
 
         // ── Config getters ─────────────────────────────────────────────────
@@ -49,6 +50,13 @@ namespace Story
         private CancellationTokenSource      _gameCts;
 
         // ── Unity lifecycle ───────────────────────────────────────────────
+        private void Awake()
+        {
+            if (buttonA != null) buttonA.OnClick += () => MakeChoice(0);
+            if (buttonB != null) buttonB.OnClick += () => MakeChoice(1);
+            if (restartButton != null) restartButton.OnClick += StartGame;
+        }
+
         private void Start() => StartGame();
 
         private void OnDestroy()
@@ -70,11 +78,7 @@ namespace Story
             gameState.currentEvent = EventSelector.Pick(eventDatabase);
 
             choicePanel?.SetActive(false);
-            if (restartButton != null)
-            {
-                restartButton.Interactable = false;
-                restartTypewriter?.Clear();
-            }
+            HideRestart();
             mainTypewriter?.Clear();
             dayTypewriter?.Clear();
 
@@ -106,27 +110,28 @@ namespace Story
                     // 2. Написать текст события
                     await mainTypewriter.PlayAsync(ev.eventText, ct);
 
-                    // 3. Написать варианты выбора (A, затем B)
+                    // 3. Печатать варианты одновременно
                     choicePanel?.SetActive(true);
                     SetButtonsInteractable(false);
                     await TypeChoiceLabelsAsync(ev, ct);
-                    SetButtonsInteractable(true);
 
-                    // 4. Ждать выбора игрока
+                    // 4. Ждать выбора (сначала TCS, затем разблокировать кнопки)
                     _choiceTcs = new UniTaskCompletionSource<int>();
+                    SetButtonsInteractable(true);
                     int choiceIndex = await _choiceTcs.Task.AttachExternalCancellation(ct);
 
-                    // 5. Скрыть варианты
-                    choicePanel?.SetActive(false);
+                    // 5. Заблокировать кнопки сразу
+                    SetButtonsInteractable(false);
 
                     var choice = choiceIndex == 0 ? ev.choiceA : ev.choiceB;
 
                     // 6. Применить выбор к состоянию
                     bool gameOver = ChoiceProcessor.Process(choice, gameState, stats, endings);
-                    gameState.RaiseChanged(); // StatsBarView обновит полоски
+                    gameState.RaiseChanged();
 
-                    // 7. Стереть текст события
-                    await mainTypewriter.EraseCurrentAsync(ct);
+                    // 7. Стереть всё одновременно: текст события + оба варианта
+                    await EraseChoicesAsync(ct);
+                    choicePanel?.SetActive(false);
 
                     // 8. Написать исход (если есть)
                     if (!string.IsNullOrWhiteSpace(choice.outcomeText))
@@ -142,10 +147,9 @@ namespace Story
                     if (gameOver)
                     {
                         await mainTypewriter.PlayAsync(gameState.gameOverReason, ct);
+                        ShowRestart(); // SetActive(true) до запуска typewriter
                         if (restartTypewriter != null)
                             await restartTypewriter.PlayCurrentAsync(ct);
-                        if (restartButton != null)
-                            restartButton.Interactable = true;
                         return;
                     }
 
@@ -161,16 +165,44 @@ namespace Story
 
         // ── Helpers ───────────────────────────────────────────────────────
 
-        private async UniTask TypeChoiceLabelsAsync(EventSO ev, CancellationToken ct)
+        private UniTask EraseChoicesAsync(CancellationToken ct)
         {
-            if (choiceTypewriterA != null) await choiceTypewriterA.PlayAsync(ev.choiceA.label, ct);
-            if (choiceTypewriterB != null) await choiceTypewriterB.PlayAsync(ev.choiceB.label, ct);
+            var eraseMain = mainTypewriter.EraseCurrentAsync(ct);
+            var eraseA    = choiceTypewriterA != null
+                ? choiceTypewriterA.EraseCurrentAsync(ct)
+                : UniTask.CompletedTask;
+            var eraseB    = choiceTypewriterB != null
+                ? choiceTypewriterB.EraseCurrentAsync(ct)
+                : UniTask.CompletedTask;
+            return UniTask.WhenAll(eraseMain, eraseA, eraseB);
+        }
+
+        private UniTask TypeChoiceLabelsAsync(EventSO ev, CancellationToken ct)
+        {
+            var taskA = choiceTypewriterA != null
+                ? choiceTypewriterA.PlayAsync(ev.choiceA.label, ct)
+                : UniTask.CompletedTask;
+            var taskB = choiceTypewriterB != null
+                ? choiceTypewriterB.PlayAsync(ev.choiceB.label, ct)
+                : UniTask.CompletedTask;
+            return UniTask.WhenAll(taskA, taskB);
         }
 
         private void SetButtonsInteractable(bool value)
         {
             if (buttonA != null) buttonA.Interactable = value;
             if (buttonB != null) buttonB.Interactable = value;
+        }
+
+        private void HideRestart()
+        {
+            restartTypewriter?.Clear();
+            restartPanel?.SetActive(false);
+        }
+
+        private void ShowRestart()
+        {
+            restartPanel?.SetActive(true);
         }
     }
 }

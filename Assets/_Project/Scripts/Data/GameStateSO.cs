@@ -7,13 +7,15 @@ namespace Story.Data
     public class GameStateSO : ScriptableObject
     {
         // ── Runtime values ──────────────────────────────
-        [NonSerialized] public int day;
-        [NonSerialized] public int health;
-        [NonSerialized] public int supplies;
-        [NonSerialized] public int sanity;
-        [NonSerialized] public EventSO  currentEvent;
-        [NonSerialized] public EventChoice lastChoice;   // исход предыдущего дня
-        [NonSerialized] public bool isGameOver;
+        [NonSerialized] public int    day;
+        [NonSerialized] public int    health;
+        [NonSerialized] public int    supplies;
+        [NonSerialized] public int    sanity;
+        [NonSerialized] public int           seed;
+        [NonSerialized] public System.Random  rng;
+        [NonSerialized] public EventSO     currentEvent;
+        [NonSerialized] public EventChoice lastChoice;
+        [NonSerialized] public bool   isGameOver;
         [NonSerialized] public string gameOverReason;
 
         // ── Event for UI ─────────────────────────────────
@@ -26,6 +28,8 @@ namespace Story.Data
         /// <summary>Сброс в начальное состояние из конфига.</summary>
         public void Initialize(WandererStatsSO stats)
         {
+            seed     = new System.Random().Next(100000, 999999);
+            rng      = new System.Random(seed);
             day          = 1;
             health       = stats.startHealth;
             supplies     = stats.startSupplies;

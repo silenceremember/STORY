@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Story.Data;
@@ -9,7 +10,7 @@ namespace Story.Core
     /// </summary>
     public static class EventSelector
     {
-        public static EventSO Pick(EventDatabaseSO database)
+        public static EventSO Pick(EventDatabaseSO database, System.Random rng)
         {
             if (database == null || database.events == null || database.events.Count == 0)
             {
@@ -17,12 +18,11 @@ namespace Story.Core
                 return null;
             }
 
-            // Взвешенный случайный выбор
             float totalWeight = 0f;
             foreach (var ev in database.events)
                 if (ev != null) totalWeight += ev.weight;
 
-            float roll = Random.Range(0f, totalWeight);
+            float roll       = (float)(rng.NextDouble() * totalWeight);
             float cumulative = 0f;
 
             foreach (var ev in database.events)
@@ -32,7 +32,6 @@ namespace Story.Core
                 if (roll < cumulative) return ev;
             }
 
-            // Fallback — последний элемент
             return database.events[database.events.Count - 1];
         }
     }

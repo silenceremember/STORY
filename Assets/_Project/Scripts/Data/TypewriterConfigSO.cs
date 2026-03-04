@@ -18,10 +18,5 @@ namespace Story.Data
         [Tooltip("Задержка между символами при стирании, сек.")]
         [Range(0.005f, 0.1f)] public float eraseDelay;
 
-        [Tooltip("Если true — стирает через DOTween fade-out вместо обратного typewriter")]
-        public bool useFadeErase = false;
-
-        [Tooltip("Длительность fade-out, сек.")]
-        [Range(0.1f, 2f)] public float fadeDuration;
     }
 }

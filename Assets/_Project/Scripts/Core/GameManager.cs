@@ -25,6 +25,7 @@ namespace Story
 
         [Header("Typewriter — Day Label")]
         [SerializeField] private TypewriterEffect dayTypewriter;
+        [SerializeField] private TypewriterEffect seedTypewriter;
 
         [Header("Typewriter — Main Text (Event / Outcome / Reason)")]
         [SerializeField] private TypewriterEffect mainTypewriter;
@@ -75,12 +76,13 @@ namespace Story
             _gameCts = new CancellationTokenSource();
 
             gameState.Initialize(stats);
-            gameState.currentEvent = EventSelector.Pick(eventDatabase);
+            gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.rng);
 
             choicePanel?.SetActive(false);
             HideRestart();
             mainTypewriter?.Clear();
             dayTypewriter?.Clear();
+            seedTypewriter?.Clear();
 
             RunGameLoop(_gameCts.Token).Forget();
         }
@@ -98,10 +100,14 @@ namespace Story
                 {
                     var ev = gameState.currentEvent;
 
-                    // 1. Написать метку дня
+                    // 1. Написать метку дня + seed (в первый день одновременно)
                     if (dayTypewriter != null)
                     {
-                        await dayTypewriter.PlayAsync($"День {gameState.day}", ct);
+                        var dayTask  = dayTypewriter.PlayAsync($"День {gameState.day}", ct);
+                        var seedTask = gameState.day == 1 && seedTypewriter != null
+                            ? seedTypewriter.PlayAsync($"Seed {gameState.seed}", ct)
+                            : UniTask.CompletedTask;
+                        await UniTask.WhenAll(dayTask, seedTask);
                         await UniTask.Delay(
                             TimeSpan.FromSeconds(PauseAfterDayLabel),
                             cancellationToken: ct);
@@ -156,7 +162,7 @@ namespace Story
                     // 10. Следующий день
                     gameState.day++;
                     gameState.lastChoice   = choice;
-                    gameState.currentEvent = EventSelector.Pick(eventDatabase);
+                    gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.rng);
                     dayTypewriter?.Clear();
                 }
             }

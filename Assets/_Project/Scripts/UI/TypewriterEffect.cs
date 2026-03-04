@@ -25,8 +25,6 @@ namespace Story.UI
         // ── Config getters ────────────────────────────────────────────────
         private float  CharDelay    => config.charDelay;
         private float  EraseDelay   => config.eraseDelay;
-        private bool   UseFadeErase => config.useFadeErase;
-        private float  FadeDuration => config.fadeDuration;
 
         // ── State ─────────────────────────────────────────────────────────
         private TMP_Text                 _text;
@@ -68,7 +66,6 @@ namespace Story.UI
             CancelInternal();
             DOTween.Kill(_text);
             _text.text  = string.Empty;
-            _text.alpha = 1f;
         }
 
         public void Skip(string fullText = null)
@@ -76,7 +73,6 @@ namespace Story.UI
             CancelInternal();
             DOTween.Kill(_text);
             if (fullText != null) _text.text = Sanitize(fullText);
-            _text.alpha = 1f;
         }
 
         public void Cancel() => CancelInternal();
@@ -125,7 +121,6 @@ namespace Story.UI
         {
             IsRunning = true;
             _text.text  = string.Empty;
-            _text.alpha = 1f;
             try
             {
                 for (int i = 0; i <= text.Length; i++)
@@ -144,30 +139,12 @@ namespace Story.UI
             IsRunning = true;
             try
             {
-                if (UseFadeErase)
+                for (int i = text.Length; i >= 0; i--)
                 {
-                    var tween = _text.DOFade(0f, FadeDuration).SetEase(Ease.InQuad);
-                    try
-                    {
-                        await UniTask.Delay(TimeSpan.FromSeconds(FadeDuration), cancellationToken: ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        tween.Kill();
-                        throw;
-                    }
-                    _text.text  = string.Empty;
-                    _text.alpha = 1f;
-                }
-                else
-                {
-                    for (int i = text.Length; i >= 0; i--)
-                    {
-                        ct.ThrowIfCancellationRequested();
-                        _text.text = text[..i];
-                        if (i > 0)
-                            await UniTask.Delay(TimeSpan.FromSeconds(EraseDelay), cancellationToken: ct);
-                    }
+                    ct.ThrowIfCancellationRequested();
+                    _text.text = text[..i];
+                    if (i > 0)
+                        await UniTask.Delay(TimeSpan.FromSeconds(EraseDelay), cancellationToken: ct);
                 }
             }
             finally { IsRunning = false; }

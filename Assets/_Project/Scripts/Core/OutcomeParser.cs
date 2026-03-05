@@ -29,15 +29,15 @@ namespace Story.Core
 
         public const string ColorGold = "#FFD700";
         public const string ColorGray = "#888888";
+        public const string ColorRed  = "#FF4444";
 
         // ── Шаг 1: подстановка пула ───────────────────────────────────────
 
         /// <summary>
-        /// Заменяет плейсхолдеры [adj], [noun], [word] словами из пула.
+        /// Заменяет плейсхолдеры [adj], [noun] словами из пула.
         ///
         ///   [adj]  → только прилагательные из пула
         ///   [noun] → только существительные из пула
-        ///   [word] → любое слово из пула
         ///
         /// Каждый тип имеет независимую очередь (перемешанную).
         /// Заполняет pickedWords — реально выбранными словами.
@@ -143,16 +143,31 @@ namespace Story.Core
             return sb.ToString();
         }
 
-        // ── Event text (normal colour + hover highlight) ───────────────────
+        // ── Event text (normal colour + hover/active highlight) ────────────
 
         /// <summary>
-        /// Рендерит текст события: слова из пула обычного цвета,
-        /// но слово совпадающее с hoveredWord — золотое (подсветка при hover).
+        /// Возвращает множество ключей слов, встроенных в processedText.
+        /// </summary>
+        public static HashSet<string> GetKeywordsInText(string processedText)
+        {
+            var keys = new HashSet<string>();
+            if (!string.IsNullOrEmpty(processedText))
+                foreach (Match m in TypedToken.Matches(processedText))
+                    keys.Add(m.Groups[2].Value);
+            return keys;
+        }
+
+        /// <summary>
+        /// Рендерит текст события:
+        ///   • Активные слова (inventory.IsActive) → золотые;
+        ///   • Hovered слово → золотое;
+        ///   • Остальные → обычный цвет.
         /// </summary>
         public static string ParseEventText(
             string          processedText,
             WordDatabaseSO  db,
-            WordSO          hoveredWord)
+            WordSO          hoveredWord,
+            WordInventorySO inventory = null)
         {
             if (string.IsNullOrEmpty(processedText)) return string.Empty;
 
@@ -170,11 +185,12 @@ namespace Story.Core
                     ? word.displayText.ToUpperInvariant()
                     : key.ToUpperInvariant();
 
+                bool isActive  = inventory != null && word != null && inventory.IsActive(word);
                 bool highlight = hoveredWord != null && word == hoveredWord;
 
-                sb.Append(highlight
+                sb.Append(isActive || highlight
                     ? $"<color={ColorGold}>{display}</color>"
-                    : display);   // обычный цвет (TMP default)
+                    : display);
 
                 lastIndex = m.Index + m.Length;
             }

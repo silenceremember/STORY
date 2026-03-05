@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using Story.Data;
@@ -8,12 +9,16 @@ namespace Story.UI
     /// <summary>
     /// Управляет подсветкой слов в тексте события при hover над слотом инвентаря.
     ///
-    /// Фазы:
-    ///   • Event-фаза:   текст события; hover → слово золотое; отпустить → обычный цвет
-    ///   • Outcome-фаза: текст исхода; hover → временно показать event-текст с золотым словом;
-    ///                   отпустить → вернуть текст исхода
+    /// Правила подсветки в event-тексте:
+    ///   • Активное слово (inventory.IsActive)  → золотое (постоянно)
+    ///   • Hovered слово с доступным слотом     → золотое
+    ///   • Hover без слота в тексте             → текст не меняется
     ///
-    /// Вешается на тот же GameObject что и main TMP_Text / TypewriterEffect.
+    /// Правила для инвентарного слота (сигнализирует через HasSlotForWord):
+    ///   • Слот ЕСТЬ в тексте события  → WordSlotView показывает нормальный/серый цвет
+    ///   • Слота НЕТ в тексте события  → WordSlotView показывает красный
+    ///
+    /// Также хранит richOutcomeText для восстановления при hover в фазе outcome.
     /// </summary>
     [RequireComponent(typeof(TMP_Text))]
     public class EventWordHighlightView : MonoBehaviour
@@ -21,46 +26,55 @@ namespace Story.UI
         [Header("ScriptableObjects")]
         [SerializeField] private HoverWordChannelSO hoverChannel;
         [SerializeField] private WordDatabaseSO     wordDatabase;
+        [SerializeField] private WordInventorySO    wordInventory;
 
-        // Обработанный текст события с [adj:key]/[noun:key] токенами
-        private string _processedEventText;
+        [Header("Typewriter (на том же объекте)")]
+        [SerializeField] private TypewriterEffect typewriter;
 
-        // Rich-text строка текущего outcome (чтобы восстанавливать при уходе курсора)
-        private string _outcomeRichText;
+        private string         _processedEventText;
+        private string         _outcomeRichText;
+        private HashSet<string> _wordsInText = new();
 
         private TMP_Text _text;
 
         private void Awake()     => _text = GetComponent<TMP_Text>();
-        private void OnEnable()  { if (hoverChannel) hoverChannel.OnHoverChanged += OnHover; }
-        private void OnDisable() { if (hoverChannel) hoverChannel.OnHoverChanged -= OnHover; }
+        private void OnEnable()
+        {
+            if (hoverChannel)  hoverChannel.OnHoverChanged  += OnHover;
+            if (wordInventory) wordInventory.OnChanged       += RefreshCurrentText;
+        }
+        private void OnDisable()
+        {
+            if (hoverChannel)  hoverChannel.OnHoverChanged  -= OnHover;
+            if (wordInventory) wordInventory.OnChanged       -= RefreshCurrentText;
+        }
 
         // ── Public API ────────────────────────────────────────────────────
 
-        /// <summary>
-        /// GameManager вызывает перед PlayRichAsync события — сохраняет processed text.
-        /// </summary>
         public void SetContent(string processedEventText)
         {
             _processedEventText = processedEventText;
+            _wordsInText        = OutcomeParser.GetKeywordsInText(processedEventText);
         }
 
-        /// <summary>
-        /// GameManager вызывает после PlayRichAsync исхода — запоминаем rich-text
-        /// чтобы уметь восстанавливать при hover.
-        /// </summary>
         public void SetOutcomeContent(string richOutcomeText)
         {
             _outcomeRichText = richOutcomeText;
         }
 
-        /// <summary>
-        /// Сброс при уходе в следующий день (очищает и event, и outcome контент).
-        /// </summary>
         public void ClearContent()
         {
             _processedEventText = null;
             _outcomeRichText    = null;
+            _wordsInText        = new HashSet<string>();
         }
+
+        /// <summary>
+        /// Возвращает true если в тексте события есть слот для данного слова.
+        /// WordSlotView использует это чтобы решить — показывать ли красный цвет.
+        /// </summary>
+        public bool HasSlotForWord(WordSO word)
+            => word != null && _wordsInText.Contains(word.key);
 
         // ── Hover ─────────────────────────────────────────────────────────
 
@@ -68,30 +82,43 @@ namespace Story.UI
         {
             if (string.IsNullOrEmpty(_processedEventText)) return;
 
+            // Не мешаем тайпрайтеру пока идёт анимация
+            if (typewriter != null && typewriter.IsRunning) return;
+
+            // В фазе outcome текст не меняем
+            if (!string.IsNullOrEmpty(_outcomeRichText)) return;
+
             if (hoveredWord != null)
             {
-                // Показываем event-текст с подсветкой нужного слова
                 _text.text                 = OutcomeParser.ParseEventText(
-                    _processedEventText, wordDatabase, hoveredWord);
+                    _processedEventText, wordDatabase, hoveredWord, wordInventory);
                 _text.maxVisibleCharacters = int.MaxValue;
             }
             else
             {
-                // Курсор ушёл — восстанавливаем нужный текст
-                if (!string.IsNullOrEmpty(_outcomeRichText))
-                {
-                    // Outcome-фаза: вернуть текст исхода
-                    _text.text                 = _outcomeRichText;
-                    _text.maxVisibleCharacters = int.MaxValue;
-                }
-                else
-                {
-                    // Event-фаза: вернуть event-текст без подсветки
-                    _text.text                 = OutcomeParser.ParseEventText(
-                        _processedEventText, wordDatabase, null);
-                    _text.maxVisibleCharacters = int.MaxValue;
-                }
+                RefreshCurrentText();
             }
+        }
+
+        // ── Internal ──────────────────────────────────────────────────────
+
+        private void RefreshCurrentText()
+        {
+            if (string.IsNullOrEmpty(_processedEventText)) return;
+
+            // Не мешаем тайпрайтеру
+            if (typewriter != null && typewriter.IsRunning) return;
+
+            if (!string.IsNullOrEmpty(_outcomeRichText))
+            {
+                _text.text                 = _outcomeRichText;
+                _text.maxVisibleCharacters = int.MaxValue;
+                return;
+            }
+
+            _text.text                 = OutcomeParser.ParseEventText(
+                _processedEventText, wordDatabase, null, wordInventory);
+            _text.maxVisibleCharacters = int.MaxValue;
         }
     }
 }

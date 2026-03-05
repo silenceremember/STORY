@@ -302,6 +302,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &269510169
 GameObject:
   m_ObjectHideFlags: 0
@@ -978,6 +979,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &556972770
 GameObject:
   m_ObjectHideFlags: 0
@@ -1161,6 +1163,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &567042349
 GameObject:
   m_ObjectHideFlags: 0
@@ -1344,6 +1347,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &580362942
 GameObject:
   m_ObjectHideFlags: 0
@@ -1717,6 +1721,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &659689521
 GameObject:
   m_ObjectHideFlags: 0
@@ -1900,6 +1905,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &666031094
 GameObject:
   m_ObjectHideFlags: 0
@@ -2083,6 +2089,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &753192098
 GameObject:
   m_ObjectHideFlags: 0
@@ -2351,7 +2358,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 400}
+  m_AnchoredPosition: {x: 0, y: 440}
   m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &877757081
@@ -3003,6 +3010,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &1417883161
 GameObject:
   m_ObjectHideFlags: 0
@@ -3254,6 +3262,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &1564665609
 GameObject:
   m_ObjectHideFlags: 0
@@ -3437,6 +3446,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Story.UI.EventWordHighlightView
   hoverChannel: {fileID: 11400000, guid: 620529645b1092f4cbfa8d0f7c5cb07a, type: 2}
   wordDatabase: {fileID: 11400000, guid: 03d1238ddd745e54fb8df06941f2bee5, type: 2}
+  wordInventory: {fileID: 0}
 --- !u!1 &1657582658
 GameObject:
   m_ObjectHideFlags: 0
@@ -3620,6 +3630,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &1697975076
 GameObject:
   m_ObjectHideFlags: 0
@@ -3803,6 +3814,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &1785940592
 GameObject:
   m_ObjectHideFlags: 0
@@ -3986,6 +3998,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   inventory: {fileID: 0}
   hoverChannel: {fileID: 0}
+  eventHighlight: {fileID: 0}
 --- !u!1 &1794463952
 GameObject:
   m_ObjectHideFlags: 0
@@ -4086,6 +4099,7 @@ MonoBehaviour:
   gameState: {fileID: 11400000, guid: 552164f0e7f945845b71f925593a181d, type: 2}
   stats: {fileID: 11400000, guid: cacb62fa60c687c4ba5429ac9e1491ae, type: 2}
   hoverChannel: {fileID: 11400000, guid: 620529645b1092f4cbfa8d0f7c5cb07a, type: 2}
+  eventHighlight: {fileID: 0}
   adjectiveSlots:
   - {fileID: 659689527}
   - {fileID: 1785940598}

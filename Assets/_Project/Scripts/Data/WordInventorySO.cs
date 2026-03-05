@@ -17,14 +17,18 @@ namespace Story.Data
         [NonSerialized] public List<WordSO> adjectives = new();
         [NonSerialized] public List<WordSO> nouns      = new();
 
+        // ── Активные слова (подсвечены в тексте события) ─────────────────
+        [NonSerialized] private HashSet<WordSO> _activeWords = new();
+
         public event Action OnChanged;
 
         // ── API ──────────────────────────────────────────────────────────────
 
         public void Clear()
         {
-            adjectives = new List<WordSO>();
-            nouns      = new List<WordSO>();
+            adjectives   = new List<WordSO>();
+            nouns        = new List<WordSO>();
+            _activeWords = new HashSet<WordSO>();
             OnChanged?.Invoke();
         }
 
@@ -44,6 +48,7 @@ namespace Story.Data
         {
             if (word == null) return;
             ListOf(word.type).Remove(word);
+            _activeWords.Remove(word);
             OnChanged?.Invoke();
         }
 
@@ -52,5 +57,26 @@ namespace Story.Data
         public List<WordSO> ListOf(WordType type) =>
             type == WordType.Adjective ? adjectives : nouns;
 
+        // ── Active API ────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Переключает активное состояние слова.
+        /// Активное слово: серое в инвентаре, золотое в тексте события.
+        /// </summary>
+        public void ToggleActive(WordSO word)
+        {
+            if (word == null) return;
+            if (_activeWords.Contains(word)) _activeWords.Remove(word);
+            else                             _activeWords.Add(word);
+            OnChanged?.Invoke();
+        }
+
+        public bool IsActive(WordSO word) => word != null && _activeWords.Contains(word);
+
+        public void ClearActive()
+        {
+            _activeWords.Clear();
+            OnChanged?.Invoke();
+        }
     }
 }

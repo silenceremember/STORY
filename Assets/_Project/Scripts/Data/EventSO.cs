@@ -14,7 +14,7 @@ namespace Story.Data
 
         [Header("Влияние на характеристики (отрицательные = убыль)")]
         [Range(-100, 100)] public int healthDelta   = 0;
-        [Range(-100, 100)] public int suppliesDelta = 0;
+        [Range(-100, 100)] public int powerDelta = 0;
         [Range(-100, 100)] public int sanityDelta   = 0;
     }
 

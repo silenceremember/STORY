@@ -23,9 +23,9 @@ namespace Story.Core
                 state.gameOverReason = endings.healthDeath;
                 return true;
             }
-            if (state.supplies == 0)
+            if (state.power == 0)
             {
-                state.gameOverReason = endings.suppliesDeath;
+                state.gameOverReason = endings.powerDeath;
                 return true;
             }
             if (state.sanity == 0)

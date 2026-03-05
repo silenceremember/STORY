@@ -15,9 +15,9 @@ namespace Story.Data
         [TextArea(2, 5)]
         public string healthDeath;
 
-        [Tooltip("Концовка при Припасах = 0")]
+        [Tooltip("Концовка при Силе = 0")]
         [TextArea(2, 5)]
-        public string suppliesDeath;
+        public string powerDeath;
 
         [Tooltip("Концовка при Рассудке = 0")]
         [TextArea(2, 5)]

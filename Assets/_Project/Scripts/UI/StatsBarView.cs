@@ -17,7 +17,7 @@ namespace Story.UI
 
         [Header("UI References")]
         [SerializeField] private Image healthFill;
-        [SerializeField] private Image suppliesFill;
+        [SerializeField] private Image powerFill;
         [SerializeField] private Image sanityFill;
 
         private void OnEnable()
@@ -35,7 +35,7 @@ namespace Story.UI
         private void Refresh()
         {
             SetBar(healthFill,   gameState.health,   stats.maxHealth);
-            SetBar(suppliesFill, gameState.supplies, stats.maxSupplies);
+            SetBar(powerFill,    gameState.power,    stats.maxPower);
             SetBar(sanityFill,   gameState.sanity,   stats.maxSanity);
         }
 

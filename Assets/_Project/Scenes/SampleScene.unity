@@ -926,7 +926,7 @@ GameObject:
   - component: {fileID: 916573904}
   - component: {fileID: 916573903}
   m_Layer: 5
-  m_Name: SuppliesBar
+  m_Name: PowerBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1534,7 +1534,7 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: cacb62fa60c687c4ba5429ac9e1491ae, type: 2}
   style: {fileID: 11400000, guid: dc5d7bb4515953248bdaf160a7306c23, type: 2}
   healthFill: {fileID: 877757083}
-  suppliesFill: {fileID: 916573903}
+  powerFill: {fileID: 0}
   sanityFill: {fileID: 269510171}
 --- !u!1 &2064395338
 GameObject:

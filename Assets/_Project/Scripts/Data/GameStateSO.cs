@@ -9,7 +9,7 @@ namespace Story.Data
         // ── Runtime values ──────────────────────────────
         [NonSerialized] public int    day;
         [NonSerialized] public int    health;
-        [NonSerialized] public int    supplies;
+        [NonSerialized] public int    power;
         [NonSerialized] public int    sanity;
         [NonSerialized] public int           seed;
         [NonSerialized] public System.Random  rng;
@@ -32,7 +32,7 @@ namespace Story.Data
             rng      = new System.Random(seed);
             day          = 1;
             health       = stats.startHealth;
-            supplies     = stats.startSupplies;
+            power        = stats.startPower;
             sanity       = stats.startSanity;
             currentEvent = null;
             lastChoice   = null;
@@ -46,7 +46,7 @@ namespace Story.Data
         {
             lastChoice = choice;
             health   = Mathf.Clamp(health   + choice.healthDelta,   0, stats.maxHealth);
-            supplies = Mathf.Clamp(supplies + choice.suppliesDelta, 0, stats.maxSupplies);
+            power    = Mathf.Clamp(power    + choice.powerDelta,    0, stats.maxPower);
             sanity   = Mathf.Clamp(sanity   + choice.sanityDelta,   0, stats.maxSanity);
         }
     }

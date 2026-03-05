@@ -17,6 +17,7 @@ namespace Story.Data
         [NonSerialized] public EventChoice lastChoice;
         [NonSerialized] public bool   isGameOver;
         [NonSerialized] public string gameOverReason;
+        [NonSerialized] public WordInventorySO wordInventory;
 
         // ── Event for UI ─────────────────────────────────
         public event Action OnChanged;

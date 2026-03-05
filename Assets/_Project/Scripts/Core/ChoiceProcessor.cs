@@ -36,5 +36,22 @@ namespace Story.Core
 
             return false;
         }
+
+        /// <summary>
+        /// Применяет суммарный пассивный эффект всех слов в инвентаре.
+        /// Вызывается в начале каждого нового дня (до показа события).
+        /// </summary>
+        public static void ApplyPassiveEffects(
+            GameStateSO     state,
+            WordInventorySO inventory,
+            WandererStatsSO stats)
+        {
+            if (inventory == null) return;
+
+            state.health = Mathf.Clamp(state.health + inventory.TotalPassiveHealth, 0, stats.maxHealth);
+            state.power  = Mathf.Clamp(state.power  + inventory.TotalPassivePower,  0, stats.maxPower);
+            state.sanity = Mathf.Clamp(state.sanity + inventory.TotalPassiveSanity, 0, stats.maxSanity);
+        }
     }
 }
+

@@ -14,8 +14,12 @@ namespace Story.Data
 
         [Header("Влияние на характеристики (отрицательные = убыль)")]
         [Range(-100, 100)] public int healthDelta   = 0;
-        [Range(-100, 100)] public int powerDelta = 0;
+        [Range(-100, 100)] public int powerDelta    = 0;
         [Range(-100, 100)] public int sanityDelta   = 0;
+
+        [Header("Награда")]
+        [Tooltip("Ключ WordSO, выдаваемого как награда (пусто = нет награды)")]
+        public string rewardWordKey = "";
     }
 
     [CreateAssetMenu(fileName = "Event_New", menuName = "Story/Event")]

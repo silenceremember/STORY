@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using Story.Data;
 using Story.Core;
@@ -41,6 +42,9 @@ namespace Story
         [SerializeField] private TypewriterEffect actionTypewriter;
         [SerializeField] private GameObject       actionPanel;
         [SerializeField] private TextButton       actionButton;
+
+        [Header("Отображение шанса")]
+        [SerializeField] private TMP_Text chanceText;
 
         [Header("Outcome Word System")]
         [SerializeField] private OutcomeWordClickHandler outcomeWordClickHandler;
@@ -123,9 +127,10 @@ namespace Story
             if (_currentLoopEvent == null) return;
             if (eventWordHighlightView != null && eventWordHighlightView.IsOutcomePhase) return;
             SetActionButtonText(_currentLoopEvent.BuildPhrase(wordInventory));
+            UpdateChanceDisplay(_currentLoopEvent.CalcChance(wordInventory));
         }
 
-        /// <summary>При наведении на слово в инвентаре — превью фразы на кнопке.</summary>
+        /// <summary>При наведении на слово в инвентаре — превью фразы + шанса на кнопке.</summary>
         private void OnHoverUpdatePhrase(WordSO hoveredWord)
         {
             if (_currentLoopEvent == null) return;
@@ -133,46 +138,67 @@ namespace Story
 
             if (hoveredWord == null)
             {
-                SetActionButtonText(_currentLoopEvent.BuildPhrase(wordInventory));
+                OnInventoryChangedUpdatePhrase();
                 return;
             }
 
+            var ev = _currentLoopEvent;
+
             // Определяем verb и noun «как если бы» hovered слово было активировано
-            string verbPart = null;
-            string nounPart = null;
+            string verbPart = ev.defaultPhraseStart;
+            string nounPart = ev.defaultPhraseEnd;
+            string verbKey  = null;
+            string nounKey  = null;
 
             if (wordInventory != null)
             {
                 var activeVerb = wordInventory.GetActive(WordType.Verb);
                 if (activeVerb != null && !string.IsNullOrEmpty(activeVerb.phraseStart))
+                {
                     verbPart = activeVerb.phraseStart;
+                    verbKey  = activeVerb.key;
+                }
 
                 var activeNoun = wordInventory.GetActive(WordType.Noun);
                 if (activeNoun != null && !string.IsNullOrEmpty(activeNoun.phraseEnd))
+                {
                     nounPart = activeNoun.phraseEnd;
+                    nounKey  = activeNoun.key;
+                }
             }
 
             // Hovered слово подсвечивается gold и замещает свой тип
             if (hoveredWord.type == WordType.Verb && !string.IsNullOrEmpty(hoveredWord.phraseStart))
+            {
                 verbPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseStart}</color>";
+                verbKey  = hoveredWord.key;
+            }
             else if (hoveredWord.type == WordType.Noun && !string.IsNullOrEmpty(hoveredWord.phraseEnd))
+            {
                 nounPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseEnd}</color>";
+                nounKey  = hoveredWord.key;
+            }
 
-            // Строим фразу — дефолт НЕ смешивается с инвентарём
-            bool hasVerb = verbPart != null;
-            bool hasNoun = nounPart != null;
-
-            string phrase;
-            if (!hasVerb && !hasNoun)
-                phrase = _currentLoopEvent.defaultPhraseStart;
-            else if (hasVerb && !hasNoun)
-                phrase = verbPart;
-            else if (!hasVerb && hasNoun)
-                phrase = $"Использовать {nounPart}";
-            else
-                phrase = $"{verbPart} {nounPart}";
+            // Строим фразу + превью шанса
+            string phrase = $"{verbPart} {nounPart}";
+            float currentChance = ev.CalcChance(wordInventory);
+            float previewChance = ev.CalcChanceForKeys(verbKey, nounKey);
+            int pctNew = Mathf.RoundToInt(previewChance * 100);
 
             SetActionButtonText(phrase);
+
+            string chanceColor;
+            if (previewChance > currentChance)
+                chanceColor = "#4CAF50";
+            else if (previewChance < currentChance)
+                chanceColor = "#F44336";
+            else
+                chanceColor = "";
+
+            if (!string.IsNullOrEmpty(chanceColor))
+                UpdateChanceDisplay($"<color={chanceColor}>{pctNew}%</color>");
+            else
+                UpdateChanceDisplay(previewChance);
         }
 
         private void SetActionButtonText(string phrase)
@@ -184,6 +210,26 @@ namespace Story
                 tmp.text = phrase.ToUpperInvariant();
                 tmp.maxVisibleCharacters = int.MaxValue;
             }
+        }
+
+        private void UpdateChanceDisplay(float chance)
+        {
+            if (chanceText == null) return;
+            int pct = Mathf.RoundToInt(chance * 100);
+            chanceText.text = $"{pct}%";
+            chanceText.gameObject.SetActive(true);
+        }
+
+        private void UpdateChanceDisplay(string richText)
+        {
+            if (chanceText == null) return;
+            chanceText.text = richText;
+            chanceText.gameObject.SetActive(true);
+        }
+
+        private void HideChanceDisplay()
+        {
+            if (chanceText != null) chanceText.gameObject.SetActive(false);
         }
 
         // ── Game Loop ─────────────────────────────────────────────────────
@@ -218,7 +264,9 @@ namespace Story
 
                     // 3. Кнопка с составной фразой
                     string defaultPhrase = ev.BuildPhrase(null);
+                    float defaultChance = ev.CalcChance(null);
                     actionPanel?.SetActive(true);
+                    UpdateChanceDisplay(defaultChance);
                     if (actionButton != null) actionButton.Interactable = false;
                     if (actionTypewriter != null)
                         await actionTypewriter.PlayAsync(defaultPhrase, ct);
@@ -229,9 +277,10 @@ namespace Story
                     await _actionTcs.Task.AttachExternalCancellation(ct);
 
                     if (actionButton != null) actionButton.Interactable = false;
+                    HideChanceDisplay();
 
                     // 5. Рассчитать nature ПЕРЕД удалением слов
-                    bool isPositive = ev.IsPositiveOutcome(wordInventory);
+                    bool isPositive = ev.RollOutcome(wordInventory, gameState.rng);
 
                     // 6. Применить intent+action + потратить активные слова
                     var usedVerb = wordInventory?.GetActive(WordType.Verb);

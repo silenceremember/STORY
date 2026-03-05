@@ -17,7 +17,7 @@ MonoBehaviour:
     \u043C\u043D\u0435 \u0447\u0442\u043E-\u043D\u0438\u0431\u0443\u0434\u044C...
     \u0438 \u044F \u0434\u0430\u043C \u0442\u0435\u0431\u0435 \u0433\u043E\u0440\u0430\u0437\u0434\u043E
     \u0431\u043E\u043B\u044C\u0448\u0435.\xBB"
-  totalPenalty: -14
+  totalPenalty: -20
   defaultPhraseStart: "\u041E\u0441\u043C\u043E\u0442\u0440\u0435\u0442\u044C"
   defaultPhrasePast: "\u043E\u0441\u043C\u0430\u0442\u0440\u0438\u0432\u0430\u0435\u0448\u044C"
   defaultHpWeight: 1
@@ -25,7 +25,8 @@ MonoBehaviour:
   defaultSanWeight: 3
   defaultPhraseEnd: "\u0440\u0430\u0437\u043B\u043E\u043C"
   defaultPenaltyReduction: 0
-  defaultPositive: 0
+  baseChance: 0.15
+  favorableBonus: 0.3
   favorableWords:
   - amulet
   - book
@@ -33,7 +34,7 @@ MonoBehaviour:
   - show
   - raise
   positiveOutcomeText: "\u0438 \u0433\u043E\u043B\u043E\u0441 \u0441\u0442\u0438\u0445\u0430\u0435\u0442.
-    \u041D\u0430 \u0437\u0435\u043C\u043B\u0435 \u2014 [noun]. \u0421\u0434\u0435\u043B\u043A\u0430
+    \u041D\u0430 \u0437\u0435\u043C\u043B\u0435 \u2014 [noun] \u0438 [verb]. \u0421\u0434\u0435\u043B\u043A\u0430
     \u0437\u0430\u043A\u043B\u044E\u0447\u0435\u043D\u0430."
   negativeOutcomeText: "\u043D\u043E \u0433\u043E\u043B\u043E\u0441 \u0445\u043E\u0445\u043E\u0447\u0435\u0442
     \u0438 \u0437\u0430\u043C\u043E\u043B\u043A\u0430\u0435\u0442. \u0417\u0435\u043C\u043B\u044F
@@ -41,10 +42,13 @@ MonoBehaviour:
   rewardWordPool:
   - {fileID: 11400000, guid: 785614c19f750fa468172cb71666fa3e, type: 2}
   - {fileID: 11400000, guid: bc229e48e90a4e147b34ca2f1df492a4, type: 2}
+  - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
   eventWordPool:
   - {fileID: 11400000, guid: 785614c19f750fa468172cb71666fa3e, type: 2}
   - {fileID: 11400000, guid: bc229e48e90a4e147b34ca2f1df492a4, type: 2}
   - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
+  - {fileID: 11400000, guid: 3f558758fb212d2459cde8eaed2b0f33, type: 2}
+  - {fileID: 11400000, guid: adad071b2fd398947a9701d344fa1a98, type: 2}
   weight: 1
   dayMin: 9
   dayMax: 9

@@ -18,7 +18,7 @@ MonoBehaviour:
     \u0442\u043E\u0432\u0430\u0440\u044B \u043D\u0430 \u043F\u0440\u0438\u043B\u0430\u0432\u043A\u0435
     \u0438 \u0449\u0443\u0440\u0438\u0442\u0441\u044F: \xAB\u0411\u0435\u0440\u0438,
     \u043F\u0443\u0442\u043D\u0438\u043A, \u0434\u043E\u0440\u043E\u0433\u0430 \u0434\u043B\u0438\u043D\u043D\u0430\u044F.\xBB"
-  totalPenalty: -5
+  totalPenalty: -8
   defaultPhraseStart: "\u041E\u0441\u043C\u043E\u0442\u0440\u0435\u0442\u044C"
   defaultPhrasePast: "\u043E\u0441\u043C\u0430\u0442\u0440\u0438\u0432\u0430\u0435\u0448\u044C"
   defaultHpWeight: 1
@@ -26,7 +26,8 @@ MonoBehaviour:
   defaultSanWeight: 0
   defaultPhraseEnd: "\u0442\u043E\u0432\u0430\u0440\u044B"
   defaultPenaltyReduction: 3
-  defaultPositive: 1
+  baseChance: 1
+  favorableBonus: 0
   favorableWords:
   - show
   - use
@@ -34,17 +35,20 @@ MonoBehaviour:
   - offer
   positiveOutcomeText: "\u0438 \u0441\u0442\u0430\u0440\u0438\u043A \u043A\u0438\u0432\u0430\u0435\u0442:
     \xAB\u0411\u0435\u0440\u0438, \u044D\u0442\u043E \u0442\u0435\u0431\u0435 \u043F\u0440\u0438\u0433\u043E\u0434\u0438\u0442\u0441\u044F\xBB.
-    \u0422\u044B \u043D\u0430\u0445\u043E\u0434\u0438\u0448\u044C [noun]."
+    \u0422\u044B \u043D\u0430\u0445\u043E\u0434\u0438\u0448\u044C [noun] \u0438 [noun]."
   negativeOutcomeText: "\u043D\u043E \u0441\u0442\u0430\u0440\u0438\u043A \u0432\u043E\u0440\u0447\u0438\u0442
     \u0438 \u043F\u0440\u044F\u0447\u0435\u0442 \u043B\u0443\u0447\u0448\u0435\u0435.
     \u0422\u044B \u0431\u0435\u0440\u0451\u0448\u044C, \u0447\u0442\u043E \u043E\u0441\u0442\u0430\u043B\u043E\u0441\u044C."
   rewardWordPool:
   - {fileID: 11400000, guid: 9bb5786569e332242826d343f32107c5, type: 2}
   - {fileID: 11400000, guid: ced37a4821b22dc42ac341e87679e1a7, type: 2}
+  - {fileID: 11400000, guid: b1352f5c24ee69b4891d3def8373ac59, type: 2}
   eventWordPool:
   - {fileID: 11400000, guid: 9bb5786569e332242826d343f32107c5, type: 2}
   - {fileID: 11400000, guid: ced37a4821b22dc42ac341e87679e1a7, type: 2}
   - {fileID: 11400000, guid: b1352f5c24ee69b4891d3def8373ac59, type: 2}
+  - {fileID: 11400000, guid: 11787e6fb6d4f374da0cfdadfbee36a4, type: 2}
+  - {fileID: 11400000, guid: 3f558758fb212d2459cde8eaed2b0f33, type: 2}
   weight: 1
   dayMin: 1
   dayMax: 1

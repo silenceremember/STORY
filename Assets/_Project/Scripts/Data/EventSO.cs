@@ -43,10 +43,14 @@ namespace Story.Data
         [Tooltip("Уменьшение штрафа по умолчанию")]
         public int defaultPenaltyReduction = 0;
 
-        [Header("Исход")]
-        [Tooltip("Положительный исход по умолчанию (без слов)")]
-        public bool defaultPositive = false;
-        [Tooltip("Ключи слов, дающих положительный исход в ЭТОМ событии")]
+        [Header("Исход — вероятности")]
+        [Tooltip("Базовый шанс успеха без слов (0..1)")]
+        [Range(0f, 1f)]
+        public float baseChance = 0.3f;
+        [Tooltip("Бонус за каждое подходящее слово (0..1)")]
+        [Range(0f, 1f)]
+        public float favorableBonus = 0.3f;
+        [Tooltip("Ключи слов, повышающих шанс в ЭТОМ событии")]
         public List<string> favorableWords = new();
 
         [TextArea(2, 4)]
@@ -89,25 +93,46 @@ namespace Story.Data
         // ── Helpers ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// Positive outcome если хотя бы одно активное слово есть в favorableWords.
-        /// Без слов → defaultPositive (для Дня 1 = true).
+        /// Вычисляет итоговый шанс положительного исхода для текущей комбинации.
+        /// baseChance + matchCount × favorableBonus, зажато в [0, 0.95].
         /// </summary>
-        public bool IsPositiveOutcome(WordInventorySO inventory)
+        public float CalcChance(WordInventorySO inventory)
         {
-            if (inventory == null)
-                return defaultPositive;
+            int matches = 0;
+            if (inventory != null && favorableWords != null && favorableWords.Count > 0)
+            {
+                var verb = inventory.GetActive(WordType.Verb);
+                if (verb != null && favorableWords.Contains(verb.key)) matches++;
 
-            var verb = inventory.GetActive(WordType.Verb);
-            if (verb != null && favorableWords != null && favorableWords.Contains(verb.key)) return true;
+                var noun = inventory.GetActive(WordType.Noun);
+                if (noun != null && favorableWords.Contains(noun.key)) matches++;
+            }
+            float chance = baseChance + matches * favorableBonus;
+            return Mathf.Clamp(chance, 0f, 0.95f);
+        }
 
-            var noun = inventory.GetActive(WordType.Noun);
-            if (noun != null && favorableWords != null && favorableWords.Contains(noun.key)) return true;
+        /// <summary>
+        /// Вычисляет шанс для произвольных verb/noun ключей (для превью при hover).
+        /// </summary>
+        public float CalcChanceForKeys(string verbKey, string nounKey)
+        {
+            int matches = 0;
+            if (favorableWords != null && favorableWords.Count > 0)
+            {
+                if (!string.IsNullOrEmpty(verbKey) && favorableWords.Contains(verbKey)) matches++;
+                if (!string.IsNullOrEmpty(nounKey) && favorableWords.Contains(nounKey)) matches++;
+            }
+            float chance = baseChance + matches * favorableBonus;
+            return Mathf.Clamp(chance, 0f, 0.95f);
+        }
 
-            // Нет активных слов или ни одно не подошло
-            bool hasAnyActive = (verb != null || noun != null);
-            if (!hasAnyActive) return defaultPositive;
-
-            return false;
+        /// <summary>
+        /// Бросает кости: возвращает true (positive) с вероятностью CalcChance.
+        /// </summary>
+        public bool RollOutcome(WordInventorySO inventory, System.Random rng)
+        {
+            float chance = CalcChance(inventory);
+            return (float)rng.NextDouble() < chance;
         }
 
         /// <summary>

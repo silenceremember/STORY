@@ -18,7 +18,7 @@ MonoBehaviour:
     \u043F\u043E\u043A\u0440\u044B\u0442\u044B \u043F\u0438\u0441\u044C\u043C\u0435\u043D\u0430\u043C\u0438,
     \u0430 \u0432 \u0433\u043B\u0443\u0431\u0438\u043D\u0435 \u043C\u0435\u0440\u0446\u0430\u0435\u0442
     \u0441\u0432\u0435\u0442."
-  totalPenalty: -10
+  totalPenalty: -16
   defaultPhraseStart: "\u0418\u0437\u0443\u0447\u0438\u0442\u044C"
   defaultPhrasePast: "\u0438\u0437\u0443\u0447\u0430\u0435\u0448\u044C"
   defaultHpWeight: 0
@@ -26,7 +26,8 @@ MonoBehaviour:
   defaultSanWeight: 2
   defaultPhraseEnd: "\u043F\u0438\u0441\u044C\u043C\u0435\u043D\u0430"
   defaultPenaltyReduction: 0
-  defaultPositive: 0
+  baseChance: 0.2
+  favorableBonus: 0.3
   favorableWords:
   - book
   - map
@@ -35,7 +36,7 @@ MonoBehaviour:
   - use
   positiveOutcomeText: "\u0438 \u0441\u0440\u0435\u0434\u0438 \u043A\u0430\u043C\u043D\u0435\u0439
     \u0442\u044B \u043D\u0430\u0445\u043E\u0434\u0438\u0448\u044C \u0442\u0430\u0439\u043D\u0438\u043A.
-    \u0412\u043D\u0443\u0442\u0440\u0438 \u2014 [noun]."
+    \u0412\u043D\u0443\u0442\u0440\u0438 \u2014 [noun] \u0438 [verb]."
   negativeOutcomeText: "\u043D\u043E \u0440\u0443\u0438\u043D\u044B \u0441\u043E\u0434\u0440\u043E\u0433\u0430\u044E\u0442\u0441\u044F.
     \u0422\u044B \u0432\u044B\u0431\u0435\u0433\u0430\u0435\u0448\u044C \u0434\u043E
     \u043E\u0431\u0432\u0430\u043B\u0430, \u043F\u043E\u0442\u0435\u0440\u044F\u0432
@@ -43,10 +44,13 @@ MonoBehaviour:
   rewardWordPool:
   - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
   - {fileID: 11400000, guid: bc229e48e90a4e147b34ca2f1df492a4, type: 2}
+  - {fileID: 11400000, guid: 3f558758fb212d2459cde8eaed2b0f33, type: 2}
   eventWordPool:
   - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
   - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
   - {fileID: 11400000, guid: b1352f5c24ee69b4891d3def8373ac59, type: 2}
+  - {fileID: 11400000, guid: adad071b2fd398947a9701d344fa1a98, type: 2}
+  - {fileID: 11400000, guid: 3f558758fb212d2459cde8eaed2b0f33, type: 2}
   weight: 1
   dayMin: 5
   dayMax: 5

@@ -14,9 +14,10 @@ namespace Story.Core
             EventChoice       choice,
             GameStateSO       state,
             WandererStatsSO   stats,
-            GameOverEndingsSO endings)
+            GameOverEndingsSO endings,
+            WordInventorySO   inventory = null)
         {
-            state.ApplyChoice(choice, stats);
+            state.ApplyChoice(choice, stats, inventory);
 
             if (state.health == 0)
             {
@@ -36,4 +37,5 @@ namespace Story.Core
 
             return false;
     }
+}
 }

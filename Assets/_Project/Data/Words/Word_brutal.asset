@@ -15,9 +15,6 @@ MonoBehaviour:
   key: brutal
   displayText: "\u0416\u0435\u0441\u0442\u043E\u043A\u0438\u0439"
   type: 0
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 0
-  passiveSanityPerDay: -1
   activeHealthBonus: 10
   activePowerBonus: 0
   activeSanityBonus: -3

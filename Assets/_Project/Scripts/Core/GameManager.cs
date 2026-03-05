@@ -1,8 +1,7 @@
 using System;
-using System.Threading;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
-using TMPro;
 using UnityEngine;
 using Story.Data;
 using Story.Core;
@@ -39,39 +38,33 @@ namespace Story
         [SerializeField] private TextButton          buttonA;
         [SerializeField] private TextButton          buttonB;
 
-        [Header("Restart (Game Over)")]
-        [SerializeField] private TypewriterEffect restartTypewriter;
-        [SerializeField] private GameObject       restartPanel;
-        [SerializeField] private TextButton       restartButton;
+        [Header("Кнопка действия (Continue / Restart)")]
+        [SerializeField] private TypewriterEffect actionTypewriter;
+        [SerializeField] private GameObject       actionPanel;
+        [SerializeField] private TextButton       actionButton;
 
-        [Header("Word Swap Panel (появляется когда слот полон)")]
-        [SerializeField] private GameObject      wordSwapPanel;
-        [SerializeField] private TextButton[]    wordSwapButtons;   // 6 кнопок
+        [Header("Outcome Word System")]
+        [SerializeField] private OutcomeWordClickHandler outcomeWordClickHandler;
+        [SerializeField] private EventWordHighlightView  eventWordHighlightView;
 
         // ── Config getters ─────────────────────────────────────────────────
         private float PauseAfterOutcome  => gameConfig.pauseAfterOutcome;
         private float PauseAfterDayLabel => gameConfig.pauseAfterDayLabel;
 
-        // ── Private ───────────────────────────────────────────────────────
-        private UniTaskCompletionSource<int>     _choiceTcs;
-        private UniTaskCompletionSource<WordSO>  _swapTcs;
-        private CancellationTokenSource          _gameCts;
+        // ── Private ─────────────────────────────────────────────────────
+        private UniTaskCompletionSource<int>  _choiceTcs;
+        private UniTaskCompletionSource<bool> _continueTcs;
+        private CancellationTokenSource       _gameCts;
+        private readonly List<WordSO>         _pickedWords = new();
 
         // ── Unity lifecycle ───────────────────────────────────────────────
         private void Awake()
         {
             if (buttonA != null) buttonA.OnClick += () => MakeChoice(0);
             if (buttonB != null) buttonB.OnClick += () => MakeChoice(1);
-            if (restartButton != null) restartButton.OnClick += StartGame;
+            if (actionButton != null) actionButton.OnClick += OnActionButtonClick;
 
-            // Кнопки замены слова
-            if (wordSwapButtons != null)
-                for (int i = 0; i < wordSwapButtons.Length; i++)
-                {
-                    int idx = i;
-                    if (wordSwapButtons[idx] != null)
-                        wordSwapButtons[idx].OnClick += () => OnSwapSlotChosen(idx);
-                }
+            actionPanel?.SetActive(false);
         }
 
         private void Start() => StartGame();
@@ -98,16 +91,30 @@ namespace Story
             gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.rng);
 
             choicePanel?.SetActive(false);
-            wordSwapPanel?.SetActive(false);
+            actionPanel?.SetActive(false);
             HideRestart();
             mainTypewriter?.Clear();
             dayTypewriter?.Clear();
             seedTypewriter?.Clear();
+            eventWordHighlightView?.ClearContent();
 
             RunGameLoop(_gameCts.Token).Forget();
         }
 
         public void MakeChoice(int index) => _choiceTcs?.TrySetResult(index);
+
+        /// <summary>
+        /// Единая кнопка действия:
+        ///   • в outcome-фазе  → «Продолжить» (resolve _continueTcs)
+        ///   • в game-over-фазе → «Начать заново» (StartGame)
+        /// </summary>
+        private void OnActionButtonClick()
+        {
+            if (_continueTcs != null && !_continueTcs.Task.Status.IsCompleted())
+                _continueTcs.TrySetResult(true);
+            else
+                StartGame();
+        }
 
         // ── Game Loop ─────────────────────────────────────────────────────
 
@@ -132,8 +139,19 @@ namespace Story
                             cancellationToken: ct);
                     }
 
-                    // 2. Написать текст события
-                    await mainTypewriter.PlayAsync(ev.eventText, ct);
+                    // 2. Пре-процессинг и отображение текста события
+                    {
+                        var pickedEvent = new List<WordSO>();
+                        string processedEvent = OutcomeParser.PreProcess(
+                            ev.eventText,
+                            ev.eventWordPool,
+                            gameState.rng,
+                            pickedEvent);
+                        string richEvent = OutcomeParser.ParseEventText(
+                            processedEvent, wordDatabase, null);
+                        eventWordHighlightView?.SetContent(processedEvent);
+                        await mainTypewriter.PlayRichAsync(richEvent, ct);
+                    }
 
                     // 3. Показать варианты (2 кнопки)
                     choicePanel?.SetActive(true);
@@ -151,20 +169,44 @@ namespace Story
                     var choice = choiceIndex == 0 ? ev.choiceA : ev.choiceB;
 
                     // 6. Применить выбор
-                    bool gameOver = ChoiceProcessor.Process(choice, gameState, stats, endings);
+                    bool gameOver = ChoiceProcessor.Process(choice, gameState, stats, endings, wordInventory);
                     gameState.RaiseChanged();
 
                     // 7. Стереть всё одновременно
                     await EraseChoicesAsync(ct);
                     choicePanel?.SetActive(false);
 
-                    // 8. Написать исход
+                    // 8. Написать исход с кликабельными словами из пула
                     if (!string.IsNullOrWhiteSpace(choice.outcomeText))
                     {
-                        await mainTypewriter.PlayAsync(choice.outcomeText, ct);
-                        await UniTask.Delay(
-                            TimeSpan.FromSeconds(PauseAfterOutcome),
-                            cancellationToken: ct);
+                        // PreProcess: подбираем слова из пула для [word] токенов
+                        _pickedWords.Clear();
+                        string processed = OutcomeParser.PreProcess(
+                            choice.outcomeText,
+                            choice.rewardWordPool,
+                            gameState.rng,
+                            _pickedWords);
+
+                        // Parse: строим TMP rich-text
+                        string richText = OutcomeParser.Parse(
+                            processed, wordDatabase, wordInventory);
+
+                        outcomeWordClickHandler?.Activate(processed);
+                        await mainTypewriter.PlayRichAsync(richText, ct);
+
+                        // Набираем лейбл кнопки, затем ждём нажатия
+                        actionPanel?.SetActive(true);
+                        if (actionButton != null) actionButton.Interactable = false;
+                        if (actionTypewriter != null)
+                            await actionTypewriter.PlayAsync("Продолжить", ct);
+                        if (actionButton != null) actionButton.Interactable = true;
+
+                        _continueTcs = new UniTaskCompletionSource<bool>();
+                        await _continueTcs.Task.AttachExternalCancellation(ct);
+                        actionPanel?.SetActive(false);
+                        actionTypewriter?.Clear();
+
+                        outcomeWordClickHandler?.Deactivate();
                         await mainTypewriter.EraseCurrentAsync(ct);
                     }
 
@@ -173,16 +215,14 @@ namespace Story
                     {
                         await mainTypewriter.PlayAsync(gameState.gameOverReason, ct);
                         ShowRestart();
-                        if (restartTypewriter != null)
-                            await restartTypewriter.PlayCurrentAsync(ct);
+                        if (actionButton != null) actionButton.Interactable = false;
+                        if (actionTypewriter != null)
+                            await actionTypewriter.PlayAsync("Заново", ct);
+                        if (actionButton != null) actionButton.Interactable = true;
                         return;
                     }
 
-                    // 10. Слово-награда
-                    if (!string.IsNullOrEmpty(choice.rewardWordKey))
-                        await TryHandleWordRewardAsync(choice.rewardWordKey, ct);
-
-                    // 11. Следующий день
+                    // 10. Следующий день
                     gameState.day++;
                     gameState.lastChoice   = choice;
                     gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.rng);
@@ -190,88 +230,6 @@ namespace Story
                 }
             }
             catch (OperationCanceledException) { }
-        }
-
-        // ── Word reward ────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Пытается выдать слово-награду. Если слот полон — открывает панель замены.
-        /// </summary>
-        private async UniTask TryHandleWordRewardAsync(string key, CancellationToken ct)
-        {
-            var pendingWord = WordRewardProcessor.TryGiveReward(key, wordDatabase, wordInventory);
-            if (pendingWord == null) return; // добавлено без вопросов
-
-            // Слот полон: дать игроку выбрать что выбросить или пропустить
-            var discarded = await ShowWordSwapPanelAsync(pendingWord, ct);
-            if (discarded != null)
-            {
-                wordInventory.Remove(discarded);
-                wordInventory.TryAdd(pendingWord);
-            }
-            // Если discarded == null — игрок пропустил награду
-        }
-
-        /// <summary>
-        /// Отображает панель обмена слов.
-        /// Возвращает слово-замену или null если пропустить.
-        /// </summary>
-        private async UniTask<WordSO> ShowWordSwapPanelAsync(WordSO incoming, CancellationToken ct)
-        {
-            if (wordSwapPanel == null) return null;
-
-            var list = wordInventory.ListOf(incoming.type);
-            _swapTcs = new UniTaskCompletionSource<WordSO>();
-
-            // Настраиваем кнопки
-            if (wordSwapButtons != null)
-            {
-                for (int i = 0; i < wordSwapButtons.Length; i++)
-                {
-                    var btn = wordSwapButtons[i];
-                    if (btn == null) continue;
-                    if (i < list.Count)
-                    {
-                        var word = list[i];
-                        // TextButton.label — предполагаем наличие публичного свойства или TMP
-                        btn.gameObject.SetActive(true);
-                        // Обновляем текст через TMP если есть
-                        var tmp = btn.GetComponentInChildren<TMP_Text>();
-                        if (tmp != null) tmp.text = word.displayText;
-                    }
-                    else
-                    {
-                        btn.gameObject.SetActive(false);
-                    }
-                }
-            }
-
-            wordSwapPanel.SetActive(true);
-            var result = await _swapTcs.Task.AttachExternalCancellation(ct);
-            wordSwapPanel.SetActive(false);
-            return result;
-        }
-
-        private void OnSwapSlotChosen(int idx)
-        {
-            if (_swapTcs == null) return;
-
-            // idx == -1 означает «пропустить»
-            if (idx < 0)
-            {
-                _swapTcs.TrySetResult(null);
-                return;
-            }
-
-            // Определяем тип по тому, что сейчас показывается в панели
-            // Используем простой способ: смотрим adjectives + nouns в порядке
-            // Панель открывается только для одного типа (incoming.type)
-            // Тип нам нужен — храним его временно
-            // Упрощение: отдаём первый подходящий
-            if (wordInventory.adjectives.Count > idx)
-                _swapTcs.TrySetResult(wordInventory.adjectives[idx]);
-            else
-                _swapTcs.TrySetResult(null);
         }
 
         // ── Helpers ───────────────────────────────────────────────────────
@@ -307,13 +265,13 @@ namespace Story
 
         private void HideRestart()
         {
-            restartTypewriter?.Clear();
-            restartPanel?.SetActive(false);
+            actionTypewriter?.Clear();
+            actionPanel?.SetActive(false);
         }
 
         private void ShowRestart()
         {
-            restartPanel?.SetActive(true);
+            actionPanel?.SetActive(true);
         }
     }
 }

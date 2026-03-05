@@ -10,9 +10,10 @@ namespace Story.UI
     public class WordInventoryView : MonoBehaviour
     {
         [Header("ScriptableObjects")]
-        [SerializeField] private WordInventorySO inventory;
-        [SerializeField] private GameStateSO      gameState;
-        [SerializeField] private WandererStatsSO  stats;
+        [SerializeField] private WordInventorySO    inventory;
+        [SerializeField] private GameStateSO        gameState;
+        [SerializeField] private WandererStatsSO    stats;
+        [SerializeField] private HoverWordChannelSO hoverChannel;
 
         [Header("6 слотов — прилагательные (слева)")]
         [SerializeField] private WordSlotView[] adjectiveSlots = new WordSlotView[6];
@@ -47,9 +48,10 @@ namespace Story.UI
             foreach (var slot in slots)
             {
                 if (slot == null) continue;
-                slot.inventory = inventory;
-                slot.gameState = gameState;
-                slot.stats     = stats;
+                slot.inventory    = inventory;
+                slot.gameState    = gameState;
+                slot.stats        = stats;
+                slot.hoverChannel = hoverChannel;
             }
         }
 

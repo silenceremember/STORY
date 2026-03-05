@@ -15,9 +15,6 @@ MonoBehaviour:
   key: wise
   displayText: "\u041C\u0443\u0434\u0440\u044B\u0439"
   type: 0
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 0
-  passiveSanityPerDay: 2
   activeHealthBonus: 0
   activePowerBonus: 0
   activeSanityBonus: 8

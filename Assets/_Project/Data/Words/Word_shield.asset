@@ -15,9 +15,6 @@ MonoBehaviour:
   key: shield
   displayText: "\u0429\u0438\u0442"
   type: 1
-  passiveHealthPerDay: 2
-  passivePowerPerDay: 0
-  passiveSanityPerDay: 0
   activeHealthBonus: 5
   activePowerBonus: 0
   activeSanityBonus: 0

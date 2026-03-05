@@ -15,9 +15,6 @@ MonoBehaviour:
   key: sword
   displayText: "\u041C\u0435\u0447"
   type: 1
-  passiveHealthPerDay: 1
-  passivePowerPerDay: 1
-  passiveSanityPerDay: 0
   activeHealthBonus: 8
   activePowerBonus: 0
   activeSanityBonus: 0

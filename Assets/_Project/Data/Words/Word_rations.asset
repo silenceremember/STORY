@@ -15,9 +15,6 @@ MonoBehaviour:
   key: rations
   displayText: "\u041F\u0440\u043E\u0432\u0438\u0430\u043D\u0442"
   type: 1
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 2
-  passiveSanityPerDay: 0
   activeHealthBonus: 0
   activePowerBonus: 8
   activeSanityBonus: 0

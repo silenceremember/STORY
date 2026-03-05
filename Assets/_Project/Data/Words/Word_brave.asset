@@ -15,9 +15,6 @@ MonoBehaviour:
   key: brave
   displayText: "\u0425\u0440\u0430\u0431\u0440\u044B\u0439"
   type: 0
-  passiveHealthPerDay: 1
-  passivePowerPerDay: 0
-  passiveSanityPerDay: 0
   activeHealthBonus: 5
   activePowerBonus: 0
   activeSanityBonus: 0

@@ -15,9 +15,6 @@ MonoBehaviour:
   key: mad
   displayText: "\u0411\u0435\u0437\u0443\u043C\u043D\u044B\u0439"
   type: 0
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 0
-  passiveSanityPerDay: -2
   activeHealthBonus: 12
   activePowerBonus: 0
   activeSanityBonus: -5

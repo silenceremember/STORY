@@ -17,9 +17,10 @@ namespace Story.Data
         [Range(-100, 100)] public int powerDelta    = 0;
         [Range(-100, 100)] public int sanityDelta   = 0;
 
-        [Header("Награда")]
-        [Tooltip("Ключ WordSO, выдаваемого как награда (пусто = нет награды)")]
-        public string rewardWordKey = "";
+        [Header("Пул слов-наград")]
+        [Tooltip("Слова, случайно выбираемые для замены токена [word] в outcomeText.\n" +
+                 "Пример: «Ты нашёл [word] на дороге.»")]
+        public System.Collections.Generic.List<WordSO> rewardWordPool = new();
     }
 
     [CreateAssetMenu(fileName = "Event_New", menuName = "Story/Event")]
@@ -36,5 +37,9 @@ namespace Story.Data
         [Header("Варианты")]
         public EventChoice choiceA;
         public EventChoice choiceB;
+
+        [Header("Пул слов для текста события")]
+        [Tooltip("Заменяет токен [adj]/[noun] в eventText. Слова отображаются обычным цветом, подсвечиваются при hover над слотом инвентаря.")]
+        public System.Collections.Generic.List<WordSO> eventWordPool = new();
     }
 }

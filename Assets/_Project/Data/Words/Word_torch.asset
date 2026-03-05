@@ -15,9 +15,6 @@ MonoBehaviour:
   key: torch
   displayText: "\u0424\u0430\u043A\u0435\u043B"
   type: 1
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 0
-  passiveSanityPerDay: 1
   activeHealthBonus: 0
   activePowerBonus: 0
   activeSanityBonus: 6

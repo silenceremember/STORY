@@ -15,9 +15,6 @@ MonoBehaviour:
   key: poison
   displayText: "\u042F\u0434"
   type: 1
-  passiveHealthPerDay: -1
-  passivePowerPerDay: 0
-  passiveSanityPerDay: 0
   activeHealthBonus: -5
   activePowerBonus: 0
   activeSanityBonus: 10

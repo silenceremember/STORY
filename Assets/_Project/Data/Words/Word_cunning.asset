@@ -15,9 +15,6 @@ MonoBehaviour:
   key: cunning
   displayText: "\u0425\u0438\u0442\u0440\u044B\u0439"
   type: 0
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 0
-  passiveSanityPerDay: 1
   activeHealthBonus: 0
   activePowerBonus: 0
   activeSanityBonus: 6

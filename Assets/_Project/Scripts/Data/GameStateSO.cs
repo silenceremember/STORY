@@ -42,13 +42,29 @@ namespace Story.Data
             RaiseChanged();
         }
 
-        /// <summary>Применяет дельты выбора. Зажимает значения в [0, max].</summary>
-        public void ApplyChoice(EventChoice choice, WandererStatsSO stats)
+        /// <summary>Применяет дельты выбора + активные бонусы слов инвентаря. Зажимает в [0, max].</summary>
+        public void ApplyChoice(EventChoice choice, WandererStatsSO stats,
+                                WordInventorySO inventory = null)
         {
             lastChoice = choice;
-            health   = Mathf.Clamp(health   + choice.healthDelta,   0, stats.maxHealth);
-            power    = Mathf.Clamp(power    + choice.powerDelta,    0, stats.maxPower);
-            sanity   = Mathf.Clamp(sanity   + choice.sanityDelta,   0, stats.maxSanity);
+
+            // Базовые дельты выбора
+            int dHp  = choice.healthDelta;
+            int dPow = choice.powerDelta;
+            int dSan = choice.sanityDelta;
+
+            // Суммируем активные бонусы всех слов в инвентаре (слова не тратятся)
+            if (inventory != null)
+            {
+                foreach (var w in inventory.adjectives)
+                    if (w != null) { dHp += w.activeHealthBonus; dPow += w.activePowerBonus; dSan += w.activeSanityBonus; }
+                foreach (var w in inventory.nouns)
+                    if (w != null) { dHp += w.activeHealthBonus; dPow += w.activePowerBonus; dSan += w.activeSanityBonus; }
+            }
+
+            health = Mathf.Clamp(health + dHp,  0, stats.maxHealth);
+            power  = Mathf.Clamp(power  + dPow, 0, stats.maxPower);
+            sanity = Mathf.Clamp(sanity + dSan, 0, stats.maxSanity);
         }
     }
 }

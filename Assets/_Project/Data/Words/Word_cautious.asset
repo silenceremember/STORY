@@ -15,9 +15,6 @@ MonoBehaviour:
   key: cautious
   displayText: "\u041E\u0441\u0442\u043E\u0440\u043E\u0436\u043D\u044B\u0439"
   type: 0
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 0
-  passiveSanityPerDay: 1
   activeHealthBonus: 0
   activePowerBonus: 3
   activeSanityBonus: 3

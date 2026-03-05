@@ -32,6 +32,9 @@ namespace Story.UI
         private CancellationTokenSource _cts;
         public  bool IsRunning { get; private set; }
 
+        /// <summary>Прямой доступ к TMP_Text (нужен OutcomeWordClickHandler).</summary>
+        public  TMP_Text TextComponent => _text;
+
         // ── Unity lifecycle ───────────────────────────────────────────────
         private void Awake()
         {
@@ -86,6 +89,16 @@ namespace Story.UI
             return TypeCoreAsync(Sanitize(text), ct);
         }
 
+        /// <summary>
+        /// Написать rich-text строку через maxVisibleCharacters.
+        /// TMP-теги (color, link) сохраняются целыми.
+        /// </summary>
+        public UniTask PlayRichAsync(string richText, CancellationToken ct = default)
+        {
+            CancelInternal();
+            return TypeRichCoreAsync(richText, ct);
+        }
+
         /// <summary>Напечатать текст, заданный на компоненте в сцене (сохранён до Awake-очистки).</summary>
         public UniTask PlayCurrentAsync(CancellationToken ct = default)
         {
@@ -119,7 +132,7 @@ namespace Story.UI
 
         private async UniTask TypeCoreAsync(string text, CancellationToken ct)
         {
-            IsRunning = true;
+            IsRunning   = true;
             _text.text  = string.Empty;
             try
             {
@@ -132,6 +145,32 @@ namespace Story.UI
                 }
             }
             finally { IsRunning = false; }
+        }
+
+        private async UniTask TypeRichCoreAsync(string richText, CancellationToken ct)
+        {
+            IsRunning             = true;
+            _text.richText        = true;
+            _text.text            = richText;
+            _text.maxVisibleCharacters = 0;
+            _text.ForceMeshUpdate();
+            int total = _text.textInfo.characterCount;
+            try
+            {
+                for (int i = 0; i <= total; i++)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    _text.maxVisibleCharacters = i;
+                    if (i < total)
+                        await UniTask.Delay(TimeSpan.FromSeconds(CharDelay), cancellationToken: ct);
+                }
+            }
+            finally
+            {
+                // Сбрасываем ограничение после завершения
+                _text.maxVisibleCharacters = int.MaxValue;
+                IsRunning = false;
+            }
         }
 
         private async UniTask EraseCoreAsync(string text, CancellationToken ct)

@@ -15,9 +15,6 @@ MonoBehaviour:
   key: amulet
   displayText: "\u0410\u043C\u0443\u043B\u0435\u0442"
   type: 1
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 0
-  passiveSanityPerDay: 2
   activeHealthBonus: 0
   activePowerBonus: 0
   activeSanityBonus: 7

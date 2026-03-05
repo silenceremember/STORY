@@ -15,9 +15,6 @@ MonoBehaviour:
   key: dagger
   displayText: "\u041A\u0438\u043D\u0436\u0430\u043B"
   type: 1
-  passiveHealthPerDay: 0
-  passivePowerPerDay: 1
-  passiveSanityPerDay: 0
   activeHealthBonus: 6
   activePowerBonus: 3
   activeSanityBonus: 0

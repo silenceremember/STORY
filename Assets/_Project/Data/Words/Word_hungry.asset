@@ -15,8 +15,9 @@ MonoBehaviour:
   key: hungry
   displayText: "\u0413\u043E\u043B\u043E\u0434\u043D\u044B\u0439"
   type: 0
-  activeHealthBonus: 0
-  activePowerBonus: 8
-  activeSanityBonus: 0
-  activeDescription: "\u0413\u043E\u043B\u043E\u0434 \u043F\u0440\u0435\u0432\u0440\u0430\u0449\u0430\u0435\u0442\u0441\u044F
-    \u0432 \u043E\u0442\u0447\u0430\u044F\u043D\u043D\u0443\u044E \u044D\u043D\u0435\u0440\u0433\u0438\u044E."
+  phraseStart: "\u041E\u0442\u0447\u0430\u044F\u043D\u043D\u043E"
+  hpWeight: 0
+  powWeight: 3
+  sanWeight: 1
+  phraseEnd: 
+  penaltyReduction: 0

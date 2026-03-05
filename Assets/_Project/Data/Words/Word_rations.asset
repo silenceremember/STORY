@@ -15,8 +15,9 @@ MonoBehaviour:
   key: rations
   displayText: "\u041F\u0440\u043E\u0432\u0438\u0430\u043D\u0442"
   type: 1
-  activeHealthBonus: 0
-  activePowerBonus: 8
-  activeSanityBonus: 0
-  activeDescription: "\u0421\u044B\u0442\u043E\u0441\u0442\u044C \u0432\u043E\u0441\u043F\u043E\u043B\u043D\u044F\u0435\u0442
-    \u0441\u0438\u043B\u0443."
+  phraseStart: 
+  hpWeight: 0
+  powWeight: 0
+  sanWeight: 0
+  phraseEnd: "\u043F\u043E\u0434\u0435\u043B\u0438\u0442\u044C\u0441\u044F \u043F\u0440\u043E\u0432\u0438\u0430\u043D\u0442\u043E\u043C"
+  penaltyReduction: 3

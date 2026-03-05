@@ -15,8 +15,9 @@ MonoBehaviour:
   key: torch
   displayText: "\u0424\u0430\u043A\u0435\u043B"
   type: 1
-  activeHealthBonus: 0
-  activePowerBonus: 0
-  activeSanityBonus: 6
-  activeDescription: "\u0421\u0432\u0435\u0442 \u0440\u0430\u0437\u0433\u043E\u043D\u044F\u0435\u0442
-    \u0442\u044C\u043C\u0443 \u0432\u043D\u0443\u0442\u0440\u0438."
+  phraseStart: 
+  hpWeight: 0
+  powWeight: 0
+  sanWeight: 0
+  phraseEnd: "\u043E\u0441\u0432\u0435\u0442\u0438\u0442\u044C \u0444\u0430\u043A\u0435\u043B\u043E\u043C"
+  penaltyReduction: 3

@@ -11,8 +11,6 @@ namespace Story.UI
     {
         [Header("ScriptableObjects")]
         [SerializeField] private WordInventorySO    inventory;
-        [SerializeField] private GameStateSO        gameState;
-        [SerializeField] private WandererStatsSO    stats;
         [SerializeField] private HoverWordChannelSO hoverChannel;
         [SerializeField] private EventWordHighlightView eventHighlight;
 
@@ -24,7 +22,6 @@ namespace Story.UI
 
         private void Awake()
         {
-            // Прокидываем зависимости в каждый слот
             InitSlots(adjectiveSlots);
             InitSlots(nounSlots);
         }
@@ -50,8 +47,6 @@ namespace Story.UI
             {
                 if (slot == null) continue;
                 slot.inventory      = inventory;
-                slot.gameState      = gameState;
-                slot.stats          = stats;
                 slot.hoverChannel   = hoverChannel;
                 slot.eventHighlight = eventHighlight;
             }

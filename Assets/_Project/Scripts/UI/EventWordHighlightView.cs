@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using Story.Data;
@@ -7,18 +6,11 @@ using Story.Core;
 namespace Story.UI
 {
     /// <summary>
-    /// Управляет подсветкой слов в тексте события при hover над слотом инвентаря.
+    /// Управляет отображением составной фразы и подсветкой.
     ///
-    /// Правила подсветки в event-тексте:
-    ///   • Активное слово (inventory.IsActive)  → золотое (постоянно)
-    ///   • Hovered слово с доступным слотом     → золотое
-    ///   • Hover без слота в тексте             → текст не меняется
-    ///
-    /// Правила для инвентарного слота (сигнализирует через HasSlotForWord):
-    ///   • Слот ЕСТЬ в тексте события  → WordSlotView показывает нормальный/серый цвет
-    ///   • Слота НЕТ в тексте события  → WordSlotView показывает красный
-    ///
-    /// Также хранит richOutcomeText для восстановления при hover в фазе outcome.
+    /// Фазы:
+    ///   Event  — показывает составную фразу (intent+action), обновляет при hover/click
+    ///   Outcome — показывает outcome rich-text, блокирует инвентарь
     /// </summary>
     [RequireComponent(typeof(TMP_Text))]
     public class EventWordHighlightView : MonoBehaviour
@@ -28,12 +20,15 @@ namespace Story.UI
         [SerializeField] private WordDatabaseSO     wordDatabase;
         [SerializeField] private WordInventorySO    wordInventory;
 
-        [Header("Typewriter (на том же объекте)")]
-        [SerializeField] private TypewriterEffect typewriter;
+        [Header("Typewriter для фразы (отдельный от main)")]
+        [SerializeField] private TypewriterEffect phraseTypewriter;
 
-        private string         _processedEventText;
-        private string         _outcomeRichText;
-        private HashSet<string> _wordsInText = new();
+        private EventSO         _currentEvent;
+        private string          _outcomeRichText;
+        private bool            _isOutcomePhase;
+
+        /// <summary>true во время outcome — слоты инвентаря неактивны.</summary>
+        public bool IsOutcomePhase => _isOutcomePhase;
 
         private TMP_Text _text;
 
@@ -41,84 +36,113 @@ namespace Story.UI
         private void OnEnable()
         {
             if (hoverChannel)  hoverChannel.OnHoverChanged  += OnHover;
-            if (wordInventory) wordInventory.OnChanged       += RefreshCurrentText;
+            if (wordInventory) wordInventory.OnChanged       += OnInventoryChanged;
         }
         private void OnDisable()
         {
             if (hoverChannel)  hoverChannel.OnHoverChanged  -= OnHover;
-            if (wordInventory) wordInventory.OnChanged       -= RefreshCurrentText;
+            if (wordInventory) wordInventory.OnChanged       -= OnInventoryChanged;
         }
 
         // ── Public API ────────────────────────────────────────────────────
 
-        public void SetContent(string processedEventText)
+        /// <summary>Вызывается при начале event-фазы.</summary>
+        public void SetEventPhase(EventSO ev, WordInventorySO inventory)
         {
-            _processedEventText = processedEventText;
-            _wordsInText        = OutcomeParser.GetKeywordsInText(processedEventText);
+            _currentEvent    = ev;
+            _outcomeRichText = null;
+            _isOutcomePhase  = false;
         }
 
-        public void SetOutcomeContent(string richOutcomeText)
+        /// <summary>Вызывается при переходе к outcome.</summary>
+        public void SetOutcomePhase(string richOutcomeText)
         {
             _outcomeRichText = richOutcomeText;
+            _isOutcomePhase  = true;
         }
 
         public void ClearContent()
         {
-            _processedEventText = null;
-            _outcomeRichText    = null;
-            _wordsInText        = new HashSet<string>();
+            _currentEvent    = null;
+            _outcomeRichText = null;
+            _isOutcomePhase  = false;
         }
 
         /// <summary>
-        /// Возвращает true если в тексте события есть слот для данного слова.
-        /// WordSlotView использует это чтобы решить — показывать ли красный цвет.
+        /// Всегда true в event-фазе — любое слово может быть использовано.
         /// </summary>
         public bool HasSlotForWord(WordSO word)
-            => word != null && _wordsInText.Contains(word.key);
+            => word != null && _currentEvent != null && !_isOutcomePhase;
 
         // ── Hover ─────────────────────────────────────────────────────────
 
         private void OnHover(WordSO hoveredWord)
         {
-            if (string.IsNullOrEmpty(_processedEventText)) return;
+            if (_currentEvent == null || _isOutcomePhase) return;
 
-            // Не мешаем тайпрайтеру пока идёт анимация
-            if (typewriter != null && typewriter.IsRunning) return;
-
-            // В фазе outcome текст не меняем
-            if (!string.IsNullOrEmpty(_outcomeRichText)) return;
-
+            // Превью фразы при наведении
             if (hoveredWord != null)
-            {
-                _text.text                 = OutcomeParser.ParseEventText(
-                    _processedEventText, wordDatabase, hoveredWord, wordInventory);
-                _text.maxVisibleCharacters = int.MaxValue;
-            }
+                UpdatePhrasePreview(hoveredWord);
             else
-            {
-                RefreshCurrentText();
-            }
+                RefreshPhrase();
         }
 
         // ── Internal ──────────────────────────────────────────────────────
 
-        private void RefreshCurrentText()
+        /// <summary>
+        /// Обновляет фразу при изменении инвентаря (клик = активация/деактивация).
+        /// </summary>
+        private void OnInventoryChanged()
         {
-            if (string.IsNullOrEmpty(_processedEventText)) return;
+            if (_currentEvent == null || _isOutcomePhase) return;
+            RefreshPhrase();
+        }
 
-            // Не мешаем тайпрайтеру
-            if (typewriter != null && typewriter.IsRunning) return;
+        /// <summary>Показывает фразу с текущими активными словами.</summary>
+        private void RefreshPhrase()
+        {
+            if (_currentEvent == null) return;
+            string phrase = _currentEvent.BuildPhrase(wordInventory);
+            SetPhraseText(phrase);
+        }
 
-            if (!string.IsNullOrEmpty(_outcomeRichText))
+        /// <summary>Показывает превью фразы с hovered словом.</summary>
+        private void UpdatePhrasePreview(WordSO hoveredWord)
+        {
+            if (_currentEvent == null) return;
+
+            string start = _currentEvent.defaultPhraseStart;
+            string end   = _currentEvent.defaultPhraseEnd;
+
+            // Активные слова
+            if (wordInventory != null)
             {
-                _text.text                 = _outcomeRichText;
-                _text.maxVisibleCharacters = int.MaxValue;
-                return;
+                var activeAdj = wordInventory.GetActive(WordType.Adjective);
+                if (activeAdj != null && !string.IsNullOrEmpty(activeAdj.phraseStart))
+                    start = activeAdj.phraseStart;
+
+                var activeNoun = wordInventory.GetActive(WordType.Noun);
+                if (activeNoun != null && !string.IsNullOrEmpty(activeNoun.phraseEnd))
+                    end = activeNoun.phraseEnd;
             }
 
-            _text.text                 = OutcomeParser.ParseEventText(
-                _processedEventText, wordDatabase, null, wordInventory);
-            _text.maxVisibleCharacters = int.MaxValue;
+            // Hovered слово заменяет свой тип
+            if (hoveredWord.type == WordType.Adjective && !string.IsNullOrEmpty(hoveredWord.phraseStart))
+                start = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseStart}</color>";
+            else if (hoveredWord.type == WordType.Noun && !string.IsNullOrEmpty(hoveredWord.phraseEnd))
+                end = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseEnd}</color>";
+
+            SetPhraseText($"{start} {end}");
+        }
+
+        private void SetPhraseText(string phrase)
+        {
+            if (phraseTypewriter != null && phraseTypewriter.TextComponent != null)
+            {
+                var tmp = phraseTypewriter.TextComponent;
+                tmp.text = phrase.ToUpperInvariant();
+                tmp.maxVisibleCharacters = int.MaxValue;
+            }
         }
     }
 }

@@ -15,8 +15,9 @@ MonoBehaviour:
   key: map
   displayText: "\u041A\u0430\u0440\u0442\u0430"
   type: 1
-  activeHealthBonus: 0
-  activePowerBonus: 4
-  activeSanityBonus: 3
-  activeDescription: "\u0417\u043D\u0430\u043D\u0438\u0435 \u043F\u0443\u0442\u0438
-    \u044D\u043A\u043E\u043D\u043E\u043C\u0438\u0442 \u0441\u0438\u043B\u044B."
+  phraseStart: 
+  hpWeight: 0
+  powWeight: 0
+  sanWeight: 0
+  phraseEnd: "\u0441\u0432\u0435\u0440\u0438\u0442\u044C\u0441\u044F \u0441 \u043A\u0430\u0440\u0442\u043E\u0439"
+  penaltyReduction: 4

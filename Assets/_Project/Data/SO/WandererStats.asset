@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: WandererStats
   m_EditorClassIdentifier: Assembly-CSharp::Story.Data.WandererStatsSO
   maxHealth: 100
-  maxSupplies: 100
+  maxPower: 100
   maxSanity: 100
-  startHealth: 5
-  startSupplies: 5
-  startSanity: 5
+  startHealth: 60
+  startPower: 60
+  startSanity: 60

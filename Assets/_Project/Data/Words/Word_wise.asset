@@ -15,8 +15,9 @@ MonoBehaviour:
   key: wise
   displayText: "\u041C\u0443\u0434\u0440\u044B\u0439"
   type: 0
-  activeHealthBonus: 0
-  activePowerBonus: 0
-  activeSanityBonus: 8
-  activeDescription: "\u041C\u0443\u0434\u0440\u043E\u0441\u0442\u044C \u2014 \u043B\u0443\u0447\u0448\u0435\u0435
-    \u043B\u0435\u043A\u0430\u0440\u0441\u0442\u0432\u043E."
+  phraseStart: "\u041C\u0443\u0434\u0440\u043E"
+  hpWeight: 0
+  powWeight: 0
+  sanWeight: 1
+  phraseEnd: 
+  penaltyReduction: 0

@@ -15,8 +15,9 @@ MonoBehaviour:
   key: book
   displayText: "\u041A\u043D\u0438\u0433\u0430"
   type: 1
-  activeHealthBonus: 0
-  activePowerBonus: 0
-  activeSanityBonus: 8
-  activeDescription: "\u0421\u043B\u043E\u0432\u0430 \u043D\u0430 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0430\u0445
-    \u0443\u043A\u0440\u0435\u043F\u043B\u044F\u044E\u0442 \u0434\u0443\u0445."
+  phraseStart: 
+  hpWeight: 0
+  powWeight: 0
+  sanWeight: 0
+  phraseEnd: "\u043F\u0440\u043E\u0447\u0435\u0441\u0442\u044C \u0437\u0430\u043A\u043B\u0438\u043D\u0430\u043D\u0438\u0435"
+  penaltyReduction: 3

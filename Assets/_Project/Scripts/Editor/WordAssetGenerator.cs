@@ -6,107 +6,87 @@ using Story.Data;
 namespace Story.Editor
 {
     /// <summary>
-    /// Меню Tools → Story → Generate Word Assets
-    /// Создаёт 10 прилагательных + 10 существительных WordSO в Assets/_Project/Data/Words/
-    /// и заполняет указанный WordDatabaseSO.
+    /// Tools → Story → Generate Word Assets
+    /// 10 adj + 10 noun с данными для Intent+Action системы.
     /// </summary>
     public static class WordAssetGenerator
     {
-        // ── Данные слов ──────────────────────────────────────────────────────
-
         private struct WordData
         {
             public string key;
             public string display;
             public WordType type;
-            // active
-            public int aHp; public int aPow; public int aSan;
-            public string aDesc;
+            // Intent (adj)
+            public string phraseStart;
+            public float hpW, powW, sanW;
+            // Action (noun)
+            public string phraseEnd;
+            public int reduction;
         }
 
         private static readonly WordData[] Words = new[]
         {
-            // ── Прилагательные ────────────────────────────────────────────
+            // ── Прилагательные (Intent) ──────────────────────────────────
             new WordData { key="brave",     display="Храбрый",    type=WordType.Adjective,
-                aHp=5,   aPow=0,  aSan=0,
-                aDesc="Храбрость восстанавливает силы." },
+                phraseStart="Храбро",     hpW=3f, powW=1f, sanW=0f },
 
             new WordData { key="cunning",   display="Хитрый",     type=WordType.Adjective,
-                aHp=0,   aPow=0,  aSan=6,
-                aDesc="Хитрость проясняет разум." },
+                phraseStart="Хитро",      hpW=0f, powW=1f, sanW=3f },
 
             new WordData { key="resilient", display="Стойкий",    type=WordType.Adjective,
-                aHp=4,   aPow=0,  aSan=0,
-                aDesc="Стойкость — щит от боли." },
+                phraseStart="Стойко",     hpW=2f, powW=1f, sanW=1f },
 
             new WordData { key="brutal",    display="Жестокий",   type=WordType.Adjective,
-                aHp=10,  aPow=0,  aSan=-3,
-                aDesc="Жестокость даёт силу, но ломает разум." },
+                phraseStart="Жестоко",    hpW=1f, powW=0f, sanW=3f },
 
             new WordData { key="cautious",  display="Осторожный", type=WordType.Adjective,
-                aHp=0,   aPow=3,  aSan=3,
-                aDesc="Осторожность сберегает ресурсы." },
+                phraseStart="Осторожно",  hpW=1f, powW=1f, sanW=1f },
 
             new WordData { key="hungry",    display="Голодный",   type=WordType.Adjective,
-                aHp=0,   aPow=8,  aSan=0,
-                aDesc="Голод превращается в отчаянную энергию." },
+                phraseStart="Отчаянно",   hpW=0f, powW=3f, sanW=1f },
 
             new WordData { key="strong",    display="Сильный",    type=WordType.Adjective,
-                aHp=0,   aPow=6,  aSan=0,
-                aDesc="Сила открывает новые возможности." },
+                phraseStart="Мощно",      hpW=1f, powW=3f, sanW=0f },
 
             new WordData { key="weary",     display="Усталый",    type=WordType.Adjective,
-                aHp=0,   aPow=0,  aSan=5,
-                aDesc="Усталость отступает перед отдыхом." },
+                phraseStart="Вяло",       hpW=1f, powW=1f, sanW=2f },
 
             new WordData { key="wise",      display="Мудрый",     type=WordType.Adjective,
-                aHp=0,   aPow=0,  aSan=8,
-                aDesc="Мудрость — лучшее лекарство." },
+                phraseStart="Мудро",      hpW=0f, powW=0f, sanW=1f },
 
             new WordData { key="mad",       display="Безумный",   type=WordType.Adjective,
-                aHp=12,  aPow=0,  aSan=-5,
-                aDesc="Безумие пробуждает скрытую ярость." },
+                phraseStart="Безумно",    hpW=3f, powW=0f, sanW=3f },
 
-            // ── Существительные ───────────────────────────────────────────
+            // ── Существительные (Action) ─────────────────────────────────
             new WordData { key="sword",     display="Меч",        type=WordType.Noun,
-                aHp=8,   aPow=0,  aSan=0,
-                aDesc="Клинок разрезает путь вперёд." },
+                phraseEnd="ударить мечом",      reduction=5 },
 
             new WordData { key="shield",    display="Щит",        type=WordType.Noun,
-                aHp=5,   aPow=0,  aSan=0,
-                aDesc="Щит принимает удар на себя." },
+                phraseEnd="прикрыться щитом",   reduction=4 },
 
             new WordData { key="torch",     display="Факел",      type=WordType.Noun,
-                aHp=0,   aPow=0,  aSan=6,
-                aDesc="Свет разгоняет тьму внутри." },
+                phraseEnd="осветить факелом",   reduction=3 },
 
             new WordData { key="medicine",  display="Лекарство",  type=WordType.Noun,
-                aHp=10,  aPow=0,  aSan=0,
-                aDesc="Снадобье возвращает к жизни." },
+                phraseEnd="применить лекарство", reduction=6 },
 
             new WordData { key="map",       display="Карта",      type=WordType.Noun,
-                aHp=0,   aPow=4,  aSan=3,
-                aDesc="Знание пути экономит силы." },
+                phraseEnd="свериться с картой", reduction=4 },
 
             new WordData { key="rations",   display="Провиант",   type=WordType.Noun,
-                aHp=0,   aPow=8,  aSan=0,
-                aDesc="Сытость восполняет силу." },
+                phraseEnd="поделиться провиантом", reduction=3 },
 
             new WordData { key="amulet",    display="Амулет",     type=WordType.Noun,
-                aHp=0,   aPow=0,  aSan=7,
-                aDesc="Талисман успокаивает разум." },
+                phraseEnd="коснуться амулета",  reduction=4 },
 
             new WordData { key="poison",    display="Яд",         type=WordType.Noun,
-                aHp=-5,  aPow=0,  aSan=10,
-                aDesc="Яд проясняет восприятие — на грани." },
+                phraseEnd="использовать яд",    reduction=5 },
 
             new WordData { key="book",      display="Книга",      type=WordType.Noun,
-                aHp=0,   aPow=0,  aSan=8,
-                aDesc="Слова на страницах укрепляют дух." },
+                phraseEnd="прочесть заклинание", reduction=3 },
 
             new WordData { key="dagger",    display="Кинжал",     type=WordType.Noun,
-                aHp=6,   aPow=3,  aSan=0,
-                aDesc="Лёгкий клинок — быстрая помощь." },
+                phraseEnd="метнуть кинжал",     reduction=5 },
         };
 
         // ── Меню ────────────────────────────────────────────────────────────
@@ -117,7 +97,6 @@ namespace Story.Editor
             const string folder = "Assets/_Project/Data/Words";
             CreateFolder(folder);
 
-            // Ищем WordDatabaseSO в проекте
             var dbGuids = AssetDatabase.FindAssets("t:WordDatabaseSO");
             WordDatabaseSO db = dbGuids.Length > 0
                 ? AssetDatabase.LoadAssetAtPath<WordDatabaseSO>(
@@ -130,17 +109,22 @@ namespace Story.Editor
             {
                 string path = $"{folder}/Word_{data.key}.asset";
 
-                // Не перезаписываем существующий
                 var existing = AssetDatabase.LoadAssetAtPath<WordSO>(path);
                 var so = existing != null ? existing : ScriptableObject.CreateInstance<WordSO>();
 
-                so.key               = data.key;
-                so.displayText       = data.display;
-                so.type              = data.type;
-                so.activeHealthBonus   = data.aHp;
-                so.activePowerBonus    = data.aPow;
-                so.activeSanityBonus   = data.aSan;
-                so.activeDescription   = data.aDesc;
+                so.key         = data.key;
+                so.displayText = data.display;
+                so.type        = data.type;
+
+                // Intent (adj)
+                so.phraseStart = data.phraseStart ?? "";
+                so.hpWeight    = data.hpW;
+                so.powWeight   = data.powW;
+                so.sanWeight   = data.sanW;
+
+                // Action (noun)
+                so.phraseEnd        = data.phraseEnd ?? "";
+                so.penaltyReduction = data.reduction;
 
                 if (existing == null)
                     AssetDatabase.CreateAsset(so, path);

@@ -4,20 +4,20 @@ using Story.Data;
 namespace Story.Core
 {
     /// <summary>
-    /// Применяет выбор игрока: обновляет GameStateSO и проверяет game-over.
+    /// Применяет intent+action: обновляет GameStateSO и проверяет game-over.
     /// Тексты концовок берёт из GameOverEndingsSO.
     /// </summary>
     public static class ChoiceProcessor
     {
         /// <returns>true если игра завершена</returns>
         public static bool Process(
-            EventChoice       choice,
+            EventSO           ev,
             GameStateSO       state,
             WandererStatsSO   stats,
             GameOverEndingsSO endings,
             WordInventorySO   inventory = null)
         {
-            state.ApplyChoice(choice, stats, inventory);
+            state.ApplyIntentAction(ev, stats, inventory);
 
             if (state.health == 0)
             {
@@ -36,6 +36,6 @@ namespace Story.Core
             }
 
             return false;
+        }
     }
-}
 }

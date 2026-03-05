@@ -14,7 +14,6 @@ namespace Story.Data
         [NonSerialized] public int           seed;
         [NonSerialized] public System.Random  rng;
         [NonSerialized] public EventSO     currentEvent;
-        [NonSerialized] public EventChoice lastChoice;
         [NonSerialized] public bool   isGameOver;
         [NonSerialized] public string gameOverReason;
         [NonSerialized] public WordInventorySO wordInventory;
@@ -36,31 +35,19 @@ namespace Story.Data
             power        = stats.startPower;
             sanity       = stats.startSanity;
             currentEvent = null;
-            lastChoice   = null;
             isGameOver   = false;
             gameOverReason = string.Empty;
             RaiseChanged();
         }
 
-        /// <summary>Применяет дельты выбора + активные бонусы слов инвентаря. Зажимает в [0, max].</summary>
-        public void ApplyChoice(EventChoice choice, WandererStatsSO stats,
-                                WordInventorySO inventory = null)
+        /// <summary>
+        /// Применяет intent+action: распределяет штраф из EventSO
+        /// с учётом активных слов инвентаря. Зажимает в [0, max].
+        /// </summary>
+        public void ApplyIntentAction(EventSO ev, WandererStatsSO stats,
+                                      WordInventorySO inventory = null)
         {
-            lastChoice = choice;
-
-            // Базовые дельты выбора
-            int dHp  = choice.healthDelta;
-            int dPow = choice.powerDelta;
-            int dSan = choice.sanityDelta;
-
-            // Суммируем активные бонусы всех слов в инвентаре (слова не тратятся)
-            if (inventory != null)
-            {
-                foreach (var w in inventory.adjectives)
-                    if (w != null) { dHp += w.activeHealthBonus; dPow += w.activePowerBonus; dSan += w.activeSanityBonus; }
-                foreach (var w in inventory.nouns)
-                    if (w != null) { dHp += w.activeHealthBonus; dPow += w.activePowerBonus; dSan += w.activeSanityBonus; }
-            }
+            ev.CalcDeltas(inventory, out int dHp, out int dPow, out int dSan);
 
             health = Mathf.Clamp(health + dHp,  0, stats.maxHealth);
             power  = Mathf.Clamp(power  + dPow, 0, stats.maxPower);

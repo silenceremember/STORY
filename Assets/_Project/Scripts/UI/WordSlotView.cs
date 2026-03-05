@@ -9,20 +9,18 @@ namespace Story.UI
     /// <summary>
     /// Отображает один слот инвентаря слов.
     ///
-    /// Состояния текста слота:
-    ///   • Обычное  → белый/дефолтный
-    ///   • Активное (inventory.IsActive) → серый
-    ///   • Hover, слота нет в событии   → красный
+    /// Состояния:
+    ///   • Обычное  → белый
+    ///   • Активное → серый
+    ///   • Outcome-фаза → клик/hover заблокированы
     ///
-    /// Клик = ToggleActive (слово остаётся в инвентаре).
+    /// Клик = ToggleActive (слово остаётся в инвентаре, меняет фразу ответа).
     /// </summary>
     public class WordSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private TextButton button;
 
         [Header("ScriptableObjects (назначает WordInventoryView)")]
-        [HideInInspector] public GameStateSO            gameState;
-        [HideInInspector] public WandererStatsSO        stats;
         [HideInInspector] public WordInventorySO        inventory;
         [HideInInspector] public HoverWordChannelSO     hoverChannel;
         [HideInInspector] public EventWordHighlightView eventHighlight;
@@ -65,22 +63,16 @@ namespace Story.UI
         public void OnPointerEnter(PointerEventData _)
         {
             if (_word == null) return;
-            hoverChannel?.SetHovered(_word);
 
-            bool hasSlot = eventHighlight != null && eventHighlight.HasSlotForWord(_word);
-            if (!hasSlot)
-            {
-                // Нет слота → красный текст + кнопка не кликабельна
-                if (_tmp != null)
-                    _tmp.text = $"<color={OutcomeParser.ColorRed}>{_word.displayText.ToUpperInvariant()}</color>";
-                if (button != null) button.Interactable = false;
-            }
+            // В outcome-фазе — ничего не делаем
+            if (eventHighlight != null && eventHighlight.IsOutcomePhase) return;
+
+            hoverChannel?.SetHovered(_word);
         }
 
         public void OnPointerExit(PointerEventData _)
         {
             hoverChannel?.SetHovered(null);
-            if (button != null) button.Interactable = true;
             RefreshDisplay();
         }
 
@@ -90,8 +82,8 @@ namespace Story.UI
         {
             if (_word == null) return;
 
-            // Нет слота в тексте события → клик игнорируется (красный = неактивный)
-            if (eventHighlight != null && !eventHighlight.HasSlotForWord(_word)) return;
+            // В outcome-фазе — клик игнорируется
+            if (eventHighlight != null && eventHighlight.IsOutcomePhase) return;
 
             inventory?.ToggleActive(_word);
         }

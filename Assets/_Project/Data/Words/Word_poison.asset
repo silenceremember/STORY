@@ -15,9 +15,10 @@ MonoBehaviour:
   key: poison
   displayText: "\u042F\u0434"
   type: 1
-  activeHealthBonus: -5
-  activePowerBonus: 0
-  activeSanityBonus: 10
-  activeDescription: "\u042F\u0434 \u043F\u0440\u043E\u044F\u0441\u043D\u044F\u0435\u0442
-    \u0432\u043E\u0441\u043F\u0440\u0438\u044F\u0442\u0438\u0435 \u2014 \u043D\u0430
-    \u0433\u0440\u0430\u043D\u0438."
+  phraseStart: 
+  hpWeight: 0
+  powWeight: 0
+  sanWeight: 0
+  phraseEnd: "\u0438\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C
+    \u044F\u0434"
+  penaltyReduction: 5

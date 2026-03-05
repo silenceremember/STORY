@@ -11,7 +11,7 @@ namespace Story
 {
     /// <summary>
     /// Центральный оркестратор игры.
-    /// Управляет async game loop: день → событие → выбор → исход → слово-награда → след. день.
+    /// Flow: день → событие → составной ответ (intent+action) → исход → слова → след. день.
     /// </summary>
     public class GameManager : MonoBehaviour
     {
@@ -31,14 +31,10 @@ namespace Story
         [Header("Typewriter — Main Text (Event / Outcome / Reason)")]
         [SerializeField] private TypewriterEffect mainTypewriter;
 
-        [Header("Choices Panel")]
-        [SerializeField] private GameObject          choicePanel;
-        [SerializeField] private TypewriterEffect    choiceTypewriterA;
-        [SerializeField] private TypewriterEffect    choiceTypewriterB;
-        [SerializeField] private TextButton          buttonA;
-        [SerializeField] private TextButton          buttonB;
+        [Header("Составная фраза действия")]
+        [SerializeField] private TypewriterEffect phraseTypewriter;
 
-        [Header("Кнопка действия (Continue / Restart)")]
+        [Header("Кнопка действия (Действовать / Продолжить / Заново)")]
         [SerializeField] private TypewriterEffect actionTypewriter;
         [SerializeField] private GameObject       actionPanel;
         [SerializeField] private TextButton       actionButton;
@@ -48,22 +44,17 @@ namespace Story
         [SerializeField] private EventWordHighlightView  eventWordHighlightView;
 
         // ── Config getters ─────────────────────────────────────────────────
-        private float PauseAfterOutcome  => gameConfig.pauseAfterOutcome;
         private float PauseAfterDayLabel => gameConfig.pauseAfterDayLabel;
 
         // ── Private ─────────────────────────────────────────────────────
-        private UniTaskCompletionSource<int>  _choiceTcs;
-        private UniTaskCompletionSource<bool> _continueTcs;
+        private UniTaskCompletionSource<bool> _actionTcs;
         private CancellationTokenSource       _gameCts;
         private readonly List<WordSO>         _pickedWords = new();
 
         // ── Unity lifecycle ───────────────────────────────────────────────
         private void Awake()
         {
-            if (buttonA != null) buttonA.OnClick += () => MakeChoice(0);
-            if (buttonB != null) buttonB.OnClick += () => MakeChoice(1);
             if (actionButton != null) actionButton.OnClick += OnActionButtonClick;
-
             actionPanel?.SetActive(false);
         }
 
@@ -83,35 +74,32 @@ namespace Story
             _gameCts?.Dispose();
             _gameCts = new CancellationTokenSource();
 
-            // Связываем wordInventory с gameState-ом и очищаем
             gameState.wordInventory = wordInventory;
             wordInventory?.Clear();
 
             gameState.Initialize(stats);
             gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.rng);
 
-            choicePanel?.SetActive(false);
             actionPanel?.SetActive(false);
-            HideRestart();
             mainTypewriter?.Clear();
             dayTypewriter?.Clear();
             seedTypewriter?.Clear();
+            phraseTypewriter?.Clear();
             eventWordHighlightView?.ClearContent();
 
             RunGameLoop(_gameCts.Token).Forget();
         }
 
-        public void MakeChoice(int index) => _choiceTcs?.TrySetResult(index);
-
         /// <summary>
         /// Единая кнопка действия:
-        ///   • в outcome-фазе  → «Продолжить» (resolve _continueTcs)
-        ///   • в game-over-фазе → «Начать заново» (StartGame)
+        ///   • в event-фазе → «Действовать» (resolve _actionTcs)
+        ///   • в outcome-фазе → «Продолжить» (resolve _actionTcs)
+        ///   • в game-over → «Заново» (StartGame)
         /// </summary>
         private void OnActionButtonClick()
         {
-            if (_continueTcs != null && !_continueTcs.Task.Status.IsCompleted())
-                _continueTcs.TrySetResult(true);
+            if (_actionTcs != null && !_actionTcs.Task.Status.IsCompleted())
+                _actionTcs.TrySetResult(true);
             else
                 StartGame();
         }
@@ -126,7 +114,7 @@ namespace Story
                 {
                     var ev = gameState.currentEvent;
 
-                    // 1. Написать метку дня + seed (в первый день одновременно)
+                    // 1. Метка дня + seed
                     if (dayTypewriter != null)
                     {
                         var dayTask  = dayTypewriter.PlayAsync($"День {gameState.day}", ct);
@@ -139,71 +127,71 @@ namespace Story
                             cancellationToken: ct);
                     }
 
-                    // 2. Пре-процессинг и отображение текста события
-                    {
-                        var pickedEvent = new List<WordSO>();
-                        string processedEvent = OutcomeParser.PreProcess(
-                            ev.eventText,
-                            ev.eventWordPool,
-                            gameState.rng,
-                            pickedEvent);
-                        string richEvent = OutcomeParser.ParseEventText(
-                            processedEvent, wordDatabase, null);
-                        eventWordHighlightView?.SetContent(processedEvent);
-                        await mainTypewriter.PlayRichAsync(richEvent, ct);
-                    }
+                    // 2. Показать event-текст (статичный, без токенов)
+                    wordInventory?.ClearActive();
+                    eventWordHighlightView?.SetEventPhase(ev, wordInventory);
 
-                    // 3. Показать варианты (2 кнопки)
-                    choicePanel?.SetActive(true);
-                    SetButtonsInteractable(false);
-                    await TypeChoiceLabelsAsync(ev, ct);
+                    await mainTypewriter.PlayAsync(ev.eventText, ct);
 
-                    // 4. Ждать выбора
-                    _choiceTcs = new UniTaskCompletionSource<int>();
-                    SetButtonsInteractable(true);
-                    int choiceIndex = await _choiceTcs.Task.AttachExternalCancellation(ct);
+                    // 3. Показать составную фразу + кнопку "Действовать"
+                    //    Фраза обновляется при активации слов (через OnChanged)
+                    string defaultPhrase = ev.BuildPhrase(null);
+                    if (phraseTypewriter != null)
+                        await phraseTypewriter.PlayAsync(defaultPhrase, ct);
 
-                    // 5. Заблокировать кнопки
-                    SetButtonsInteractable(false);
+                    actionPanel?.SetActive(true);
+                    if (actionButton != null) actionButton.Interactable = false;
+                    if (actionTypewriter != null)
+                        await actionTypewriter.PlayAsync("Действовать", ct);
+                    if (actionButton != null) actionButton.Interactable = true;
 
-                    var choice = choiceIndex == 0 ? ev.choiceA : ev.choiceB;
+                    // 4. Ждать нажатия "Действовать"
+                    _actionTcs = new UniTaskCompletionSource<bool>();
+                    await _actionTcs.Task.AttachExternalCancellation(ct);
 
-                    // 6. Применить выбор
-                    bool gameOver = ChoiceProcessor.Process(choice, gameState, stats, endings, wordInventory);
+                    if (actionButton != null) actionButton.Interactable = false;
+
+                    // 5. Применить intent+action
+                    bool gameOver = ChoiceProcessor.Process(ev, gameState, stats, endings, wordInventory);
                     gameState.RaiseChanged();
 
-                    // 7. Стереть всё одновременно
-                    await EraseChoicesAsync(ct);
-                    choicePanel?.SetActive(false);
+                    // 6. Стереть event-текст и фразу
+                    var eraseMain   = mainTypewriter.EraseCurrentAsync(ct);
+                    var erasePhrase = phraseTypewriter != null
+                        ? phraseTypewriter.EraseCurrentAsync(ct)
+                        : UniTask.CompletedTask;
+                    var eraseAction = actionTypewriter != null
+                        ? actionTypewriter.EraseCurrentAsync(ct)
+                        : UniTask.CompletedTask;
+                    await UniTask.WhenAll(eraseMain, erasePhrase, eraseAction);
+                    actionPanel?.SetActive(false);
 
-                    // 8. Написать исход с кликабельными словами из пула
-                    if (!string.IsNullOrWhiteSpace(choice.outcomeText))
+                    // 7. Показать outcome с кликабельными словами-наградами
+                    if (!string.IsNullOrWhiteSpace(ev.outcomeText))
                     {
-                        // PreProcess: подбираем слова из пула для [word] токенов
                         _pickedWords.Clear();
                         string processed = OutcomeParser.PreProcess(
-                            choice.outcomeText,
-                            choice.rewardWordPool,
+                            ev.outcomeText,
+                            ev.rewardWordPool,
                             gameState.rng,
                             _pickedWords);
 
-                        // Parse: строим TMP rich-text
                         string richText = OutcomeParser.Parse(
                             processed, wordDatabase, wordInventory);
 
                         outcomeWordClickHandler?.Activate(processed);
-                        eventWordHighlightView?.SetOutcomeContent(richText);
+                        eventWordHighlightView?.SetOutcomePhase(richText);
                         await mainTypewriter.PlayRichAsync(richText, ct);
 
-                        // Набираем лейбл кнопки, затем ждём нажатия
+                        // Кнопка "Продолжить"
                         actionPanel?.SetActive(true);
                         if (actionButton != null) actionButton.Interactable = false;
                         if (actionTypewriter != null)
                             await actionTypewriter.PlayAsync("Продолжить", ct);
                         if (actionButton != null) actionButton.Interactable = true;
 
-                        _continueTcs = new UniTaskCompletionSource<bool>();
-                        await _continueTcs.Task.AttachExternalCancellation(ct);
+                        _actionTcs = new UniTaskCompletionSource<bool>();
+                        await _actionTcs.Task.AttachExternalCancellation(ct);
                         actionPanel?.SetActive(false);
                         actionTypewriter?.Clear();
 
@@ -212,11 +200,11 @@ namespace Story
                         await mainTypewriter.EraseCurrentAsync(ct);
                     }
 
-                    // 9. Game Over?
+                    // 8. Game Over?
                     if (gameOver)
                     {
                         await mainTypewriter.PlayAsync(gameState.gameOverReason, ct);
-                        ShowRestart();
+                        actionPanel?.SetActive(true);
                         if (actionButton != null) actionButton.Interactable = false;
                         if (actionTypewriter != null)
                             await actionTypewriter.PlayAsync("Заново", ct);
@@ -224,56 +212,13 @@ namespace Story
                         return;
                     }
 
-                    // 10. Следующий день
+                    // 9. Следующий день
                     gameState.day++;
-                    gameState.lastChoice   = choice;
                     gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.rng);
                     dayTypewriter?.Clear();
                 }
             }
             catch (OperationCanceledException) { }
-        }
-
-        // ── Helpers ───────────────────────────────────────────────────────
-
-        private UniTask EraseChoicesAsync(CancellationToken ct)
-        {
-            var eraseMain = mainTypewriter.EraseCurrentAsync(ct);
-            var eraseA    = choiceTypewriterA != null
-                ? choiceTypewriterA.EraseCurrentAsync(ct)
-                : UniTask.CompletedTask;
-            var eraseB    = choiceTypewriterB != null
-                ? choiceTypewriterB.EraseCurrentAsync(ct)
-                : UniTask.CompletedTask;
-            return UniTask.WhenAll(eraseMain, eraseA, eraseB);
-        }
-
-        private UniTask TypeChoiceLabelsAsync(EventSO ev, CancellationToken ct)
-        {
-            var taskA = choiceTypewriterA != null
-                ? choiceTypewriterA.PlayAsync(ev.choiceA.label, ct)
-                : UniTask.CompletedTask;
-            var taskB = choiceTypewriterB != null
-                ? choiceTypewriterB.PlayAsync(ev.choiceB.label, ct)
-                : UniTask.CompletedTask;
-            return UniTask.WhenAll(taskA, taskB);
-        }
-
-        private void SetButtonsInteractable(bool value)
-        {
-            if (buttonA != null) buttonA.Interactable = value;
-            if (buttonB != null) buttonB.Interactable = value;
-        }
-
-        private void HideRestart()
-        {
-            actionTypewriter?.Clear();
-            actionPanel?.SetActive(false);
-        }
-
-        private void ShowRestart()
-        {
-            actionPanel?.SetActive(true);
         }
     }
 }

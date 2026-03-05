@@ -8,14 +8,11 @@ namespace Story.Core
     /// <summary>
     /// Двухэтапный конвейер для outcome-текста:
     ///
-    /// 1. PreProcess — заменяет токены [word] случайными словами из пула,
+    /// 1. PreProcess — заменяет токены [adj]/[noun] случайными словами из пула,
     ///    превращая их в [adj:key] / [noun:key].
     ///
     /// 2. Parse — конвертирует [adj:key] / [noun:key] в TMP rich-text строку:
-    ///    золото (link) = доступно, серый = уже в инвентаре.
-    ///
-    /// Пример outcomeText: "Ты нашёл [word] воина и взял его [word]."
-    /// При пуле [brave, sword] → "...нашёл [adj:brave] воина и взял его [noun:sword]."
+    ///    золото (link) = доступно для сбора, серый = уже в инвентаре.
     /// </summary>
     public static class OutcomeParser
     {
@@ -25,7 +22,7 @@ namespace Story.Core
 
         // Типизированные токены которые выходят из PreProcess
         private static readonly Regex TypedToken =
-            new Regex(@"\[(adj|noun):([a-zA-Z_]+)\]", RegexOptions.Compiled);
+            new Regex(@"\[(adj|noun):([^\]]+)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public const string ColorGold = "#FFD700";
         public const string ColorGray = "#888888";
@@ -35,10 +32,6 @@ namespace Story.Core
 
         /// <summary>
         /// Заменяет плейсхолдеры [adj], [noun] словами из пула.
-        ///
-        ///   [adj]  → только прилагательные из пула
-        ///   [noun] → только существительные из пула
-        ///
         /// Каждый тип имеет независимую очередь (перемешанную).
         /// Заполняет pickedWords — реально выбранными словами.
         /// </summary>
@@ -53,7 +46,6 @@ namespace Story.Core
             if (string.IsNullOrEmpty(rawText)) return string.Empty;
             if (pool == null || pool.Count == 0) return rawText;
 
-            // Две независимые перемешанные очереди
             var adjQueue  = ShuffledQueue(pool, WordType.Adjective, rng);
             var nounQueue = ShuffledQueue(pool, WordType.Noun,      rng);
 
@@ -85,7 +77,6 @@ namespace Story.Core
                 if (w != null && (filter == null || w.type == filter))
                     list.Add(w);
 
-            // Fisher-Yates
             for (int i = list.Count - 1; i > 0; i--)
             {
                 int j = rng.Next(i + 1);
@@ -135,62 +126,6 @@ namespace Story.Core
                         ? $"<color={ColorGray}>{display}</color>"
                         : $"<link=\"{key}\"><color={ColorGold}>{display}</color></link>");
                 }
-
-                lastIndex = m.Index + m.Length;
-            }
-
-            sb.Append(processedText.Substring(lastIndex).ToUpperInvariant());
-            return sb.ToString();
-        }
-
-        // ── Event text (normal colour + hover/active highlight) ────────────
-
-        /// <summary>
-        /// Возвращает множество ключей слов, встроенных в processedText.
-        /// </summary>
-        public static HashSet<string> GetKeywordsInText(string processedText)
-        {
-            var keys = new HashSet<string>();
-            if (!string.IsNullOrEmpty(processedText))
-                foreach (Match m in TypedToken.Matches(processedText))
-                    keys.Add(m.Groups[2].Value);
-            return keys;
-        }
-
-        /// <summary>
-        /// Рендерит текст события:
-        ///   • Активные слова (inventory.IsActive) → золотые;
-        ///   • Hovered слово → золотое;
-        ///   • Остальные → обычный цвет.
-        /// </summary>
-        public static string ParseEventText(
-            string          processedText,
-            WordDatabaseSO  db,
-            WordSO          hoveredWord,
-            WordInventorySO inventory = null)
-        {
-            if (string.IsNullOrEmpty(processedText)) return string.Empty;
-
-            var sb        = new StringBuilder();
-            int lastIndex = 0;
-
-            foreach (Match m in TypedToken.Matches(processedText))
-            {
-                sb.Append(processedText.Substring(lastIndex, m.Index - lastIndex)
-                                       .ToUpperInvariant());
-
-                string key     = m.Groups[2].Value;
-                var    word    = db?.GetByKey(key);
-                string display = word != null
-                    ? word.displayText.ToUpperInvariant()
-                    : key.ToUpperInvariant();
-
-                bool isActive  = inventory != null && word != null && inventory.IsActive(word);
-                bool highlight = hoveredWord != null && word == hoveredWord;
-
-                sb.Append(isActive || highlight
-                    ? $"<color={ColorGold}>{display}</color>"
-                    : display);
 
                 lastIndex = m.Index + m.Length;
             }

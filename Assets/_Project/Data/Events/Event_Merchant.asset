@@ -12,32 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 893ca9fa8d0024d4c8ef36faf2225ad4, type: 3}
   m_Name: Event_Merchant
   m_EditorClassIdentifier: Assembly-CSharp::Story.Data.EventSO
-  eventText: "[adj] \u0442\u043E\u0440\u0433\u043E\u0432\u0435\u0446 \u043F\u0440\u0435\u0434\u043B\u0430\u0433\u0430\u0435\u0442
-    [noun] \u0432 \u043E\u0431\u043C\u0435\u043D \u043D\u0430 \u0443\u0441\u043B\u0443\u0433\u0443."
-  weight: 1
-  choiceA:
-    label: "\u041F\u0440\u0438\u043D\u044F\u0442\u044C \u0441\u0434\u0435\u043B\u043A\u0443"
-    outcomeText: "\u0421\u0434\u0435\u043B\u043A\u0430 \u0437\u0430\u043A\u043B\u044E\u0447\u0435\u043D\u0430.
-      \u0422\u044B \u043F\u043E\u043B\u0443\u0447\u0438\u043B [noun]."
-    healthDelta: 0
-    powerDelta: -10
-    sanityDelta: 5
-    rewardWordPool:
-    - {fileID: 11400000, guid: 86da3061e40cad846a1061ab1bce0213, type: 2}
-    - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
-    - {fileID: 11400000, guid: cf2661d13d3119547bd34b0f89714290, type: 2}
-  choiceB:
-    label: "\u041E\u0442\u043A\u0430\u0437\u0430\u0442\u044C\u0441\u044F"
-    outcomeText: "\u0422\u044B \u043D\u0435 \u0434\u043E\u0432\u0435\u0440\u044F\u0435\u0448\u044C
-      \u043D\u0435\u0437\u043D\u0430\u043A\u043E\u043C\u0446\u0430\u043C. [adj] \u0440\u0435\u0448\u0435\u043D\u0438\u0435."
-    healthDelta: 0
-    powerDelta: 0
-    sanityDelta: -5
-    rewardWordPool:
-    - {fileID: 11400000, guid: 4f12b6c74fc93b748a943ddcec7702fa, type: 2}
-    - {fileID: 11400000, guid: 22960fa7f6f83c84896305458d9aa856, type: 2}
-  eventWordPool:
-  - {fileID: 11400000, guid: 794075af11dfa124e931ddb265ffce73, type: 2}
-  - {fileID: 11400000, guid: 4972ed2eb4274ed4a98ff3082eb4b080, type: 2}
+  eventText: "\u0411\u0440\u043E\u0434\u044F\u0447\u0438\u0439 \u0442\u043E\u0440\u0433\u043E\u0432\u0435\u0446
+    \u0440\u0430\u0441\u043A\u043B\u0430\u0434\u044B\u0432\u0430\u0435\u0442 \u0442\u043E\u0432\u0430\u0440\u044B.
+    \u0426\u0435\u043D\u044B \u043A\u0443\u0441\u0430\u044E\u0442\u0441\u044F."
+  totalPenalty: -8
+  defaultPhraseStart: "\u041C\u043E\u043B\u0447\u0430"
+  defaultHpWeight: 1
+  defaultPowWeight: 1
+  defaultSanWeight: 0
+  defaultPhraseEnd: "\u0442\u043E\u0440\u0433\u043E\u0432\u0430\u0442\u044C"
+  defaultPenaltyReduction: 0
+  outcomeText: "\u0422\u043E\u0440\u0433\u043E\u0432\u0435\u0446 \u0443\u0445\u043E\u0434\u0438\u0442,
+    \u043E\u0441\u0442\u0430\u0432\u0438\u0432 [noun] \u0432 \u043F\u043E\u0434\u0430\u0440\u043E\u043A."
+  rewardWordPool:
   - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
   - {fileID: 11400000, guid: 86da3061e40cad846a1061ab1bce0213, type: 2}
+  eventWordPool:
+  - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
+  - {fileID: 11400000, guid: 86da3061e40cad846a1061ab1bce0213, type: 2}
+  - {fileID: 11400000, guid: 693bf60f3f55d55498d00b87d7ec9ec5, type: 2}
+  weight: 1.2

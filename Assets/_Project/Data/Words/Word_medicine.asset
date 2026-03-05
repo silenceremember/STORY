@@ -15,8 +15,9 @@ MonoBehaviour:
   key: medicine
   displayText: "\u041B\u0435\u043A\u0430\u0440\u0441\u0442\u0432\u043E"
   type: 1
-  activeHealthBonus: 10
-  activePowerBonus: 0
-  activeSanityBonus: 0
-  activeDescription: "\u0421\u043D\u0430\u0434\u043E\u0431\u044C\u0435 \u0432\u043E\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u0442
-    \u043A \u0436\u0438\u0437\u043D\u0438."
+  phraseStart: 
+  hpWeight: 0
+  powWeight: 0
+  sanWeight: 0
+  phraseEnd: "\u043F\u0440\u0438\u043C\u0435\u043D\u0438\u0442\u044C \u043B\u0435\u043A\u0430\u0440\u0441\u0442\u0432\u043E"
+  penaltyReduction: 6

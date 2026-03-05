@@ -4,8 +4,8 @@ using Story.Data;
 namespace Story.Core
 {
     /// <summary>
-    /// Применяет трату (active use) слова: снимает его из инвентаря и
-    /// применяет активный бонус к GameStateSO.
+    /// Удаляет слово из инвентаря (при сборе дубликата или по другой причине).
+    /// В системе Intent+Action слова не «тратятся» — этот класс оставлен для совместимости.
     /// </summary>
     public static class WordSpendProcessor
     {
@@ -22,16 +22,8 @@ namespace Story.Core
             }
 
             inventory.Remove(word);
-
-            state.health = UnityEngine.Mathf.Clamp(
-                state.health + word.activeHealthBonus, 0, stats.maxHealth);
-            state.power  = UnityEngine.Mathf.Clamp(
-                state.power  + word.activePowerBonus,  0, stats.maxPower);
-            state.sanity = UnityEngine.Mathf.Clamp(
-                state.sanity + word.activeSanityBonus, 0, stats.maxSanity);
-
             state.RaiseChanged();
-            Debug.Log($"[WordSpendProcessor] Потрачено слово: {word.displayText}");
+            Debug.Log($"[WordSpendProcessor] Удалено слово: {word.displayText}");
         }
     }
 }

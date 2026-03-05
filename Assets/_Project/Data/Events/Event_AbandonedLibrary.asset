@@ -12,21 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 893ca9fa8d0024d4c8ef36faf2225ad4, type: 3}
   m_Name: Event_AbandonedLibrary
   m_EditorClassIdentifier: Assembly-CSharp::Story.Data.EventSO
-  eventText: "\u0422\u044B \u043D\u0430\u0445\u043E\u0434\u0438\u0448\u044C [adj]
-    \u0431\u0438\u0431\u043B\u0438\u043E\u0442\u0435\u043A\u0443. \u041F\u043E\u043B\u043A\u0438
-    \u043B\u043E\u043C\u044F\u0442\u0441\u044F \u043E\u0442 [noun]."
+  eventText: "[adj] \u0431\u0438\u0431\u043B\u0438\u043E\u0442\u0435\u043A\u0430.
+    \u041F\u043E\u043B\u043A\u0438 \u043B\u043E\u043C\u044F\u0442\u0441\u044F \u043E\u0442
+    [noun]."
   weight: 1
   choiceA:
     label: "\u0427\u0438\u0442\u0430\u0442\u044C \u0434\u043E \u0440\u0430\u0441\u0441\u0432\u0435\u0442\u0430"
-    outcomeText: "\u0421\u043B\u043E\u0432\u0430 \u043D\u0430\u043F\u043E\u043B\u043D\u044F\u044E\u0442
-      \u0440\u0430\u0437\u0443\u043C. \u0422\u044B \u0431\u0435\u0440\u0451\u0448\u044C
-      \u0441 \u0441\u043E\u0431\u043E\u0439 [noun]."
+    outcomeText: "\u0417\u043D\u0430\u043D\u0438\u0435 \u2014 \u0441\u0438\u043B\u0430.
+      \u0411\u0435\u0440\u0451\u0448\u044C \u0441 \u0441\u043E\u0431\u043E\u0439
+      [noun]."
     healthDelta: 0
     powerDelta: -5
     sanityDelta: 15
     rewardWordPool:
     - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
     - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
+    - {fileID: 11400000, guid: bc229e48e90a4e147b34ca2f1df492a4, type: 2}
   choiceB:
     label: "\u041E\u0441\u043C\u043E\u0442\u0440\u0435\u0442\u044C\u0441\u044F \u0438
       \u0443\u0439\u0442\u0438"
@@ -38,8 +39,12 @@ MonoBehaviour:
     rewardWordPool:
     - {fileID: 11400000, guid: b1352f5c24ee69b4891d3def8373ac59, type: 2}
     - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
+    - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
   eventWordPool:
-  - {fileID: 11400000, guid: ba97650d5eae24e4cb6023abefe037b2, type: 2}
   - {fileID: 11400000, guid: 22960fa7f6f83c84896305458d9aa856, type: 2}
+  - {fileID: 11400000, guid: ba97650d5eae24e4cb6023abefe037b2, type: 2}
+  - {fileID: 11400000, guid: 4f12b6c74fc93b748a943ddcec7702fa, type: 2}
   - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
+  - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
+  - {fileID: 11400000, guid: bc229e48e90a4e147b34ca2f1df492a4, type: 2}
   - {fileID: 11400000, guid: b1352f5c24ee69b4891d3def8373ac59, type: 2}

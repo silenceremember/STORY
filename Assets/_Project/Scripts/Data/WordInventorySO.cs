@@ -17,8 +17,9 @@ namespace Story.Data
         [NonSerialized] public List<WordSO> adjectives = new();
         [NonSerialized] public List<WordSO> nouns      = new();
 
-        // ── Активные слова (подсвечены в тексте события) ─────────────────
-        [NonSerialized] private HashSet<WordSO> _activeWords = new();
+        // ── Активное слово по типу (заменяет слот в тексте события) ──────
+        [NonSerialized] private WordSO _activeAdj;
+        [NonSerialized] private WordSO _activeNoun;
 
         public event Action OnChanged;
 
@@ -28,7 +29,8 @@ namespace Story.Data
         {
             adjectives   = new List<WordSO>();
             nouns        = new List<WordSO>();
-            _activeWords = new HashSet<WordSO>();
+            _activeAdj   = null;
+            _activeNoun  = null;
             OnChanged?.Invoke();
         }
 
@@ -48,7 +50,8 @@ namespace Story.Data
         {
             if (word == null) return;
             ListOf(word.type).Remove(word);
-            _activeWords.Remove(word);
+            if (_activeAdj  == word) _activeAdj  = null;
+            if (_activeNoun == word) _activeNoun = null;
             OnChanged?.Invoke();
         }
 
@@ -60,22 +63,37 @@ namespace Story.Data
         // ── Active API ────────────────────────────────────────────────────
 
         /// <summary>
-        /// Переключает активное состояние слова.
-        /// Активное слово: серое в инвентаре, золотое в тексте события.
+        /// Переключает активное слово для своего типа.
+        /// Активный adj заменяет ВСЕ [adj:key] слоты в тексте события.
+        /// Активный noun заменяет ВСЕ [noun:key] слоты.
+        /// Одновременно активен только 1 adj и 1 noun.
         /// </summary>
         public void ToggleActive(WordSO word)
         {
             if (word == null) return;
-            if (_activeWords.Contains(word)) _activeWords.Remove(word);
-            else                             _activeWords.Add(word);
+
+            if (word.type == WordType.Adjective)
+                _activeAdj = (_activeAdj == word) ? null : word;
+            else
+                _activeNoun = (_activeNoun == word) ? null : word;
+
             OnChanged?.Invoke();
         }
 
-        public bool IsActive(WordSO word) => word != null && _activeWords.Contains(word);
+        /// <summary>Возвращает текущее активное слово для этого типа (или null).</summary>
+        public WordSO GetActive(WordType type)
+            => type == WordType.Adjective ? _activeAdj : _activeNoun;
+
+        public bool IsActive(WordSO word)
+        {
+            if (word == null) return false;
+            return word.type == WordType.Adjective ? word == _activeAdj : word == _activeNoun;
+        }
 
         public void ClearActive()
         {
-            _activeWords.Clear();
+            _activeAdj  = null;
+            _activeNoun = null;
             OnChanged?.Invoke();
         }
     }

@@ -15,8 +15,9 @@ MonoBehaviour:
   key: cunning
   displayText: "\u0425\u0438\u0442\u0440\u044B\u0439"
   type: 0
-  activeHealthBonus: 0
-  activePowerBonus: 0
-  activeSanityBonus: 6
-  activeDescription: "\u0425\u0438\u0442\u0440\u043E\u0441\u0442\u044C \u043F\u0440\u043E\u044F\u0441\u043D\u044F\u0435\u0442
-    \u0440\u0430\u0437\u0443\u043C."
+  phraseStart: "\u0425\u0438\u0442\u0440\u043E"
+  hpWeight: 0
+  powWeight: 1
+  sanWeight: 3
+  phraseEnd: 
+  penaltyReduction: 0

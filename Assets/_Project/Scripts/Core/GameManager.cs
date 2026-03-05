@@ -84,7 +84,7 @@ namespace Story
             wordInventory?.Clear();
 
             gameState.Initialize(stats);
-            gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.rng);
+            gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.day, gameState.flags, gameState.rng);
 
             actionPanel?.SetActive(false);
             mainTypewriter?.Clear();
@@ -254,6 +254,13 @@ namespace Story
 
                     // 8. Показать outcome (зависит от nature)
                     _currentLoopEvent = null;
+
+                    // Устанавливаем флаг из события
+                    if (isPositive)
+                        gameState.SetFlag(ev.setsFlagOnPositive);
+                    else
+                        gameState.SetFlag(ev.setsFlagOnNegative);
+
                     string outcomeRaw = ev.BuildOutcome(usedVerb, usedNoun, isPositive);
 
                     if (!string.IsNullOrWhiteSpace(outcomeRaw))
@@ -313,7 +320,7 @@ namespace Story
 
                     // 9. Следующий день
                     gameState.day++;
-                    gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.rng);
+                    gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.day, gameState.flags, gameState.rng);
                     dayTypewriter?.Clear();
                 }
             }

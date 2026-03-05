@@ -18,6 +18,12 @@ namespace Story.Data
         [NonSerialized] public string gameOverReason;
         [NonSerialized] public WordInventorySO wordInventory;
 
+        // ── Flags for event chaining ─────────────────────
+        [NonSerialized] public System.Collections.Generic.HashSet<string> flags = new();
+
+        public void SetFlag(string flag) { if (!string.IsNullOrEmpty(flag)) flags.Add(flag); }
+        public bool HasFlag(string flag) => !string.IsNullOrEmpty(flag) && flags.Contains(flag);
+
         // ── Event for UI ─────────────────────────────────
         public event Action OnChanged;
         public event Action OnGameOver;
@@ -37,6 +43,7 @@ namespace Story.Data
             currentEvent = null;
             isGameOver   = false;
             gameOverReason = string.Empty;
+            flags.Clear();
             RaiseChanged();
         }
 

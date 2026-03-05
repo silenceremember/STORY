@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -43,6 +44,8 @@ namespace Story.Data
         public int defaultPenaltyReduction = 0;
 
         [Header("Исход")]
+        [Tooltip("Положительный исход по умолчанию (без слов)")]
+        public bool defaultPositive = false;
         [Tooltip("Ключи слов, дающих положительный исход в ЭТОМ событии")]
         public List<string> favorableWords = new();
 
@@ -65,22 +68,44 @@ namespace Story.Data
         [Range(0.1f, 10f)]
         public float weight = 1f;
 
+        [Header("Доступность по дням")]
+        [Tooltip("С какого дня доступно (включительно)")]
+        public int dayMin = 1;
+        [Tooltip("По какой день доступно (включительно)")]
+        public int dayMax = 10;
+        [Tooltip("Блокирует все остальные события в этот день")]
+        public bool isMandatory = false;
+
+        [Header("Флаги — цепочки событий")]
+        [Tooltip("Флаги, которые ДОЛЖНЫ быть установлены для доступа")]
+        public string[] requiredFlags = Array.Empty<string>();
+        [Tooltip("Флаги, которых НЕ ДОЛЖНО быть для доступа")]
+        public string[] excludedFlags = Array.Empty<string>();
+        [Tooltip("Флаг, устанавливаемый при positive outcome")]
+        public string setsFlagOnPositive = "";
+        [Tooltip("Флаг, устанавливаемый при negative outcome")]
+        public string setsFlagOnNegative = "";
+
         // ── Helpers ──────────────────────────────────────────────────────
 
         /// <summary>
         /// Positive outcome если хотя бы одно активное слово есть в favorableWords.
-        /// Без слов (дефолт) → всегда negative.
+        /// Без слов → defaultPositive (для Дня 1 = true).
         /// </summary>
         public bool IsPositiveOutcome(WordInventorySO inventory)
         {
-            if (inventory == null || favorableWords == null || favorableWords.Count == 0)
-                return false;
+            if (inventory == null)
+                return defaultPositive;
 
             var verb = inventory.GetActive(WordType.Verb);
-            if (verb != null && favorableWords.Contains(verb.key)) return true;
+            if (verb != null && favorableWords != null && favorableWords.Contains(verb.key)) return true;
 
             var noun = inventory.GetActive(WordType.Noun);
-            if (noun != null && favorableWords.Contains(noun.key)) return true;
+            if (noun != null && favorableWords != null && favorableWords.Contains(noun.key)) return true;
+
+            // Нет активных слов или ни одно не подошло
+            bool hasAnyActive = (verb != null || noun != null);
+            if (!hasAnyActive) return defaultPositive;
 
             return false;
         }

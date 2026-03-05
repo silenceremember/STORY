@@ -52,39 +52,5 @@ namespace Story.Data
         public List<WordSO> ListOf(WordType type) =>
             type == WordType.Adjective ? adjectives : nouns;
 
-        // ── Passive totals (используется ChoiceProcessor) ─────────────────
-
-        public int TotalPassiveHealth
-        {
-            get
-            {
-                int sum = 0;
-                foreach (var w in adjectives) if (w != null) sum += w.passiveHealthPerDay;
-                foreach (var w in nouns)      if (w != null) sum += w.passiveHealthPerDay;
-                return sum;
-            }
-        }
-
-        public int TotalPassivePower
-        {
-            get
-            {
-                int sum = 0;
-                foreach (var w in adjectives) if (w != null) sum += w.passivePowerPerDay;
-                foreach (var w in nouns)      if (w != null) sum += w.passivePowerPerDay;
-                return sum;
-            }
-        }
-
-        public int TotalPassiveSanity
-        {
-            get
-            {
-                int sum = 0;
-                foreach (var w in adjectives) if (w != null) sum += w.passiveSanityPerDay;
-                foreach (var w in nouns)      if (w != null) sum += w.passiveSanityPerDay;
-                return sum;
-            }
-        }
     }
 }

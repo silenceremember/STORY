@@ -18,11 +18,6 @@ namespace Story.Data
         public string displayText = "Слово";
         public WordType type      = WordType.Adjective;
 
-        [Header("Пассивный эффект (каждый день пока в инвентаре)")]
-        public int passiveHealthPerDay = 0;
-        public int passivePowerPerDay  = 0;
-        public int passiveSanityPerDay = 0;
-
         [Header("Активный эффект (при трате)")]
         public int activeHealthBonus   = 0;
         public int activePowerBonus    = 0;

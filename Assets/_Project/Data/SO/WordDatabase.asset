@@ -13,15 +13,23 @@ MonoBehaviour:
   m_Name: WordDatabase
   m_EditorClassIdentifier: Assembly-CSharp::Story.Data.WordDatabaseSO
   words:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 4972ed2eb4274ed4a98ff3082eb4b080, type: 2}
+  - {fileID: 11400000, guid: 794075af11dfa124e931ddb265ffce73, type: 2}
+  - {fileID: 11400000, guid: 8e1f22931d4067244bf30811b4569a99, type: 2}
+  - {fileID: 11400000, guid: 2118fa827d692754eb664b49e7f42340, type: 2}
+  - {fileID: 11400000, guid: 4f12b6c74fc93b748a943ddcec7702fa, type: 2}
+  - {fileID: 11400000, guid: 389f98209f24a2c469df560eee93099d, type: 2}
+  - {fileID: 11400000, guid: 7793906ae118cbb44b10c06ed74cdb6d, type: 2}
+  - {fileID: 11400000, guid: ba97650d5eae24e4cb6023abefe037b2, type: 2}
+  - {fileID: 11400000, guid: 22960fa7f6f83c84896305458d9aa856, type: 2}
+  - {fileID: 11400000, guid: 7cbf897edb4bf2e4684d1c0fda28adbe, type: 2}
+  - {fileID: 11400000, guid: 9bb5786569e332242826d343f32107c5, type: 2}
+  - {fileID: 11400000, guid: ced37a4821b22dc42ac341e87679e1a7, type: 2}
+  - {fileID: 11400000, guid: b1352f5c24ee69b4891d3def8373ac59, type: 2}
+  - {fileID: 11400000, guid: cf2661d13d3119547bd34b0f89714290, type: 2}
+  - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
+  - {fileID: 11400000, guid: 86da3061e40cad846a1061ab1bce0213, type: 2}
+  - {fileID: 11400000, guid: bc229e48e90a4e147b34ca2f1df492a4, type: 2}
+  - {fileID: 11400000, guid: 785614c19f750fa468172cb71666fa3e, type: 2}
+  - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
+  - {fileID: 11400000, guid: 693bf60f3f55d55498d00b87d7ec9ec5, type: 2}

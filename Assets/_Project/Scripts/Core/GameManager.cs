@@ -119,13 +119,6 @@ namespace Story
                 {
                     var ev = gameState.currentEvent;
 
-                    // 0. Пассивные эффекты слов (каждый день, кроме первого)
-                    if (gameState.day > 1)
-                    {
-                        ChoiceProcessor.ApplyPassiveEffects(gameState, wordInventory, stats);
-                        gameState.RaiseChanged();
-                    }
-
                     // 1. Написать метку дня + seed (в первый день одновременно)
                     if (dayTypewriter != null)
                     {

@@ -3890,19 +3890,19 @@ MonoBehaviour:
   gameState: {fileID: 11400000, guid: 552164f0e7f945845b71f925593a181d, type: 2}
   stats: {fileID: 11400000, guid: cacb62fa60c687c4ba5429ac9e1491ae, type: 2}
   adjectiveSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 659689527}
+  - {fileID: 1785940598}
+  - {fileID: 1534009230}
+  - {fileID: 1373919440}
+  - {fileID: 1697975082}
+  - {fileID: 666031100}
   nounSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 556972776}
+  - {fileID: 567042355}
+  - {fileID: 640007957}
+  - {fileID: 55689573}
+  - {fileID: 548673885}
+  - {fileID: 1657582664}
 --- !u!1 &2008279134
 GameObject:
   m_ObjectHideFlags: 0

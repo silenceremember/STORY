@@ -11,7 +11,12 @@ namespace Story
 {
     /// <summary>
     /// Центральный оркестратор игры.
-    /// Flow: день → событие → составной ответ (intent+action) → исход → слова → след. день.
+    /// Flow: день → событие → кнопка с фразой (intent+action) → исход → слова → след. день.
+    ///
+    /// ActionButton показывает:
+    ///   • Event-фаза:   составная фраза ("Молча пройти мимо")
+    ///   • Outcome-фаза: "Продолжить"
+    ///   • Game Over:    "Заново"
     /// </summary>
     public class GameManager : MonoBehaviour
     {
@@ -23,6 +28,7 @@ namespace Story
         [SerializeField] private GameConfigSO       gameConfig;
         [SerializeField] private WordDatabaseSO    wordDatabase;
         [SerializeField] private WordInventorySO   wordInventory;
+        [SerializeField] private HoverWordChannelSO hoverChannel;
 
         [Header("Typewriter — Day Label")]
         [SerializeField] private TypewriterEffect dayTypewriter;
@@ -31,10 +37,7 @@ namespace Story
         [Header("Typewriter — Main Text (Event / Outcome / Reason)")]
         [SerializeField] private TypewriterEffect mainTypewriter;
 
-        [Header("Составная фраза действия")]
-        [SerializeField] private TypewriterEffect phraseTypewriter;
-
-        [Header("Кнопка действия (Действовать / Продолжить / Заново)")]
+        [Header("Кнопка действия (фраза / Продолжить / Заново)")]
         [SerializeField] private TypewriterEffect actionTypewriter;
         [SerializeField] private GameObject       actionPanel;
         [SerializeField] private TextButton       actionButton;
@@ -50,6 +53,7 @@ namespace Story
         private UniTaskCompletionSource<bool> _actionTcs;
         private CancellationTokenSource       _gameCts;
         private readonly List<WordSO>         _pickedWords = new();
+        private EventSO                       _currentLoopEvent;
 
         // ── Unity lifecycle ───────────────────────────────────────────────
         private void Awake()
@@ -62,6 +66,8 @@ namespace Story
 
         private void OnDestroy()
         {
+            if (wordInventory != null) wordInventory.OnChanged -= OnInventoryChangedUpdatePhrase;
+            if (hoverChannel != null)  hoverChannel.OnHoverChanged -= OnHoverUpdatePhrase;
             _gameCts?.Cancel();
             _gameCts?.Dispose();
         }
@@ -84,24 +90,86 @@ namespace Story
             mainTypewriter?.Clear();
             dayTypewriter?.Clear();
             seedTypewriter?.Clear();
-            phraseTypewriter?.Clear();
+            actionTypewriter?.Clear();
             eventWordHighlightView?.ClearContent();
+
+            // Подписка на обновление фразы при изменении инвентаря / hover
+            if (wordInventory != null)
+            {
+                wordInventory.OnChanged -= OnInventoryChangedUpdatePhrase;
+                wordInventory.OnChanged += OnInventoryChangedUpdatePhrase;
+            }
+            if (hoverChannel != null)
+            {
+                hoverChannel.OnHoverChanged -= OnHoverUpdatePhrase;
+                hoverChannel.OnHoverChanged += OnHoverUpdatePhrase;
+            }
 
             RunGameLoop(_gameCts.Token).Forget();
         }
 
-        /// <summary>
-        /// Единая кнопка действия:
-        ///   • в event-фазе → «Действовать» (resolve _actionTcs)
-        ///   • в outcome-фазе → «Продолжить» (resolve _actionTcs)
-        ///   • в game-over → «Заново» (StartGame)
-        /// </summary>
         private void OnActionButtonClick()
         {
             if (_actionTcs != null && !_actionTcs.Task.Status.IsCompleted())
                 _actionTcs.TrySetResult(true);
             else
                 StartGame();
+        }
+
+        // ── Обновление фразы на кнопке при изменении инвентаря ────────────
+
+        private void OnInventoryChangedUpdatePhrase()
+        {
+            if (_currentLoopEvent == null) return;
+            if (eventWordHighlightView != null && eventWordHighlightView.IsOutcomePhase) return;
+            SetActionButtonText(_currentLoopEvent.BuildPhrase(wordInventory));
+        }
+
+        /// <summary>При наведении на слово в инвентаре — превью фразы на кнопке.</summary>
+        private void OnHoverUpdatePhrase(WordSO hoveredWord)
+        {
+            if (_currentLoopEvent == null) return;
+            if (eventWordHighlightView != null && eventWordHighlightView.IsOutcomePhase) return;
+
+            if (hoveredWord == null)
+            {
+                // Снято наведение — возвращаем текущую фразу
+                SetActionButtonText(_currentLoopEvent.BuildPhrase(wordInventory));
+                return;
+            }
+
+            // Превью: берём текущую фразу и подставляем hovered слово
+            string start = _currentLoopEvent.defaultPhraseStart;
+            string end   = _currentLoopEvent.defaultPhraseEnd;
+
+            if (wordInventory != null)
+            {
+                var activeAdj = wordInventory.GetActive(WordType.Adjective);
+                if (activeAdj != null && !string.IsNullOrEmpty(activeAdj.phraseStart))
+                    start = activeAdj.phraseStart;
+                var activeNoun = wordInventory.GetActive(WordType.Noun);
+                if (activeNoun != null && !string.IsNullOrEmpty(activeNoun.phraseEnd))
+                    end = activeNoun.phraseEnd;
+            }
+
+            // Hovered слово заменяет свой тип (gold highlight)
+            if (hoveredWord.type == WordType.Adjective && !string.IsNullOrEmpty(hoveredWord.phraseStart))
+                start = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseStart}</color>";
+            else if (hoveredWord.type == WordType.Noun && !string.IsNullOrEmpty(hoveredWord.phraseEnd))
+                end = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseEnd}</color>";
+
+            SetActionButtonText($"{start} {end}");
+        }
+
+        private void SetActionButtonText(string phrase)
+        {
+            if (actionTypewriter == null) return;
+            var tmp = actionTypewriter.TextComponent;
+            if (tmp != null)
+            {
+                tmp.text = phrase.ToUpperInvariant();
+                tmp.maxVisibleCharacters = int.MaxValue;
+            }
         }
 
         // ── Game Loop ─────────────────────────────────────────────────────
@@ -113,6 +181,7 @@ namespace Story
                 while (!ct.IsCancellationRequested)
                 {
                     var ev = gameState.currentEvent;
+                    _currentLoopEvent = ev;
 
                     // 1. Метка дня + seed
                     if (dayTypewriter != null)
@@ -127,46 +196,49 @@ namespace Story
                             cancellationToken: ct);
                     }
 
-                    // 2. Показать event-текст (статичный, без токенов)
+                    // 2. Показать event-текст (статичный)
                     wordInventory?.ClearActive();
                     eventWordHighlightView?.SetEventPhase(ev, wordInventory);
 
                     await mainTypewriter.PlayAsync(ev.eventText, ct);
 
-                    // 3. Показать составную фразу + кнопку "Действовать"
-                    //    Фраза обновляется при активации слов (через OnChanged)
+                    // 3. Кнопка с составной фразой
                     string defaultPhrase = ev.BuildPhrase(null);
-                    if (phraseTypewriter != null)
-                        await phraseTypewriter.PlayAsync(defaultPhrase, ct);
-
                     actionPanel?.SetActive(true);
                     if (actionButton != null) actionButton.Interactable = false;
                     if (actionTypewriter != null)
-                        await actionTypewriter.PlayAsync("Действовать", ct);
+                        await actionTypewriter.PlayAsync(defaultPhrase, ct);
                     if (actionButton != null) actionButton.Interactable = true;
 
-                    // 4. Ждать нажатия "Действовать"
+                    // 4. Ждать нажатия кнопки (фраза обновляется live через OnInventoryChanged)
                     _actionTcs = new UniTaskCompletionSource<bool>();
                     await _actionTcs.Task.AttachExternalCancellation(ct);
 
                     if (actionButton != null) actionButton.Interactable = false;
 
-                    // 5. Применить intent+action
+                    // 5. Применить intent+action + потратить активные слова
+                    // Запоминаем до Process, т.к. ClearActive обнулит
+                    var usedAdj  = wordInventory?.GetActive(WordType.Adjective);
+                    var usedNoun = wordInventory?.GetActive(WordType.Noun);
+
                     bool gameOver = ChoiceProcessor.Process(ev, gameState, stats, endings, wordInventory);
+
+                    // Расходуем использованные слова
+                    if (usedAdj  != null) wordInventory.Remove(usedAdj);
+                    if (usedNoun != null) wordInventory.Remove(usedNoun);
+
                     gameState.RaiseChanged();
 
-                    // 6. Стереть event-текст и фразу
+                    // 6. Стереть event-текст и кнопку
                     var eraseMain   = mainTypewriter.EraseCurrentAsync(ct);
-                    var erasePhrase = phraseTypewriter != null
-                        ? phraseTypewriter.EraseCurrentAsync(ct)
-                        : UniTask.CompletedTask;
                     var eraseAction = actionTypewriter != null
                         ? actionTypewriter.EraseCurrentAsync(ct)
                         : UniTask.CompletedTask;
-                    await UniTask.WhenAll(eraseMain, erasePhrase, eraseAction);
+                    await UniTask.WhenAll(eraseMain, eraseAction);
                     actionPanel?.SetActive(false);
 
                     // 7. Показать outcome с кликабельными словами-наградами
+                    _currentLoopEvent = null; // блокируем live-update фразы
                     if (!string.IsNullOrWhiteSpace(ev.outcomeText))
                     {
                         _pickedWords.Clear();

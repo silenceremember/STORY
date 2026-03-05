@@ -16,9 +16,10 @@ MonoBehaviour:
   displayText: "\u042F\u0434"
   type: 1
   phraseStart: 
+  phrasePast: 
   hpWeight: 0
   powWeight: 0
   sanWeight: 0
-  phraseEnd: "\u0438\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C
-    \u044F\u0434"
+  phraseEnd: "\u0441\u043A\u043B\u044F\u043D\u043A\u0443 \u0441 \u044F\u0434\u043E\u043C"
   penaltyReduction: 5
+  nature: -0.7

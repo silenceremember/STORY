@@ -5,13 +5,14 @@ namespace Story.Data
 {
     /// <summary>
     /// Событие дня. Содержит:
-    ///   • eventText — статичный нарратив (без [adj]/[noun] токенов)
+    ///   • eventText — статичный нарратив
     ///   • totalPenalty — общий штраф (отрицательное число)
     ///   • defaultIntent / defaultAction — дефолтный составной ответ
-    ///   • outcomeText — шаблон исхода (с [adj]/[noun] для наград)
+    ///   • favorableWords — ключи слов, дающих положительный исход
+    ///   • positiveOutcomeText / negativeOutcomeText — последствия
     ///   • rewardWordPool — пул слов-наград в outcome
     ///
-    /// Игрок может заменить intent (adj из инвентаря) и action (noun),
+    /// Игрок может заменить intent (verb из инвентаря) и action (noun),
     /// тем самым изменяя распределение и величину штрафа.
     /// </summary>
     [CreateAssetMenu(fileName = "Event_New", menuName = "Story/Event")]
@@ -26,30 +27,38 @@ namespace Story.Data
         [Tooltip("Общий штраф события (отрицательное число, напр. -15)")]
         public int totalPenalty = -15;
 
-        [Header("Дефолтный ответ")]
-        [Tooltip("Начало фразы по умолчанию, напр. «Осторожно»")]
-        public string defaultPhraseStart = "Осторожно";
+        [Header("Дефолтный ответ (всегда verb + noun)")]
+        [Tooltip("Инфинитив глагола по умолчанию, напр. «Осмотреть»")]
+        public string defaultPhraseStart = "Осмотреть";
+        [Tooltip("2-е лицо наст. вр., напр. «осматриваешь» — для outcome")]
+        public string defaultPhrasePast = "осматриваешь";
         [Tooltip("Распределение штрафа по HP (нормализуется вместе с pow/san)")]
         public float defaultHpWeight  = 1f;
         public float defaultPowWeight = 1f;
         public float defaultSanWeight = 1f;
 
-        [Tooltip("Конец фразы по умолчанию, напр. «отступить»")]
-        public string defaultPhraseEnd = "отступить";
+        [Tooltip("Объект по умолчанию в вин. падеже, напр. «тропу»")]
+        public string defaultPhraseEnd = "окрестности";
         [Tooltip("Уменьшение штрафа по умолчанию")]
         public int defaultPenaltyReduction = 0;
 
         [Header("Исход")]
+        [Tooltip("Ключи слов, дающих положительный исход в ЭТОМ событии")]
+        public List<string> favorableWords = new();
+
         [TextArea(2, 4)]
-        [Tooltip("Текст после действия, может содержать [adj]/[noun] для наград")]
-        public string outcomeText = "";
+        [Tooltip("Положительный исход. Может содержать [verb]/[noun] для наград")]
+        public string positiveOutcomeText = "";
+        [TextArea(2, 4)]
+        [Tooltip("Отрицательный исход (без наград)")]
+        public string negativeOutcomeText = "";
 
         [Header("Пул слов-наград")]
-        [Tooltip("Слова для [adj]/[noun] токенов в outcomeText")]
+        [Tooltip("Слова для [verb]/[noun] токенов в positiveOutcomeText")]
         public List<WordSO> rewardWordPool = new();
 
         [Header("Пул слов для отображения")]
-        [Tooltip("Все слова из пула события (для совместимости и подсветки)")]
+        [Tooltip("Все слова из пула события")]
         public List<WordSO> eventWordPool = new();
 
         [Tooltip("Чем выше вес, тем чаще событие выпадает")]
@@ -58,47 +67,94 @@ namespace Story.Data
 
         // ── Helpers ──────────────────────────────────────────────────────
 
-        /// <summary>Возвращает составную фразу с учётом активных слов.</summary>
+        /// <summary>
+        /// Positive outcome если хотя бы одно активное слово есть в favorableWords.
+        /// Без слов (дефолт) → всегда negative.
+        /// </summary>
+        public bool IsPositiveOutcome(WordInventorySO inventory)
+        {
+            if (inventory == null || favorableWords == null || favorableWords.Count == 0)
+                return false;
+
+            var verb = inventory.GetActive(WordType.Verb);
+            if (verb != null && favorableWords.Contains(verb.key)) return true;
+
+            var noun = inventory.GetActive(WordType.Noun);
+            if (noun != null && favorableWords.Contains(noun.key)) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Возвращает составную фразу для кнопки действия.
+        /// Всегда verb + noun. Игрок заменяет каждую часть независимо.
+        ///   0 слов → defaultPhraseStart + defaultPhraseEnd
+        ///   verb  → verb.phraseStart + defaultPhraseEnd
+        ///   noun  → defaultPhraseStart + noun.phraseEnd
+        ///   оба   → verb.phraseStart + noun.phraseEnd
+        /// </summary>
         public string BuildPhrase(WordInventorySO inventory)
         {
-            string start = defaultPhraseStart;
-            string end   = defaultPhraseEnd;
+            string verbPart = defaultPhraseStart;
+            string nounPart = defaultPhraseEnd;
 
             if (inventory != null)
             {
-                var activeAdj = inventory.GetActive(WordType.Adjective);
-                if (activeAdj != null && !string.IsNullOrEmpty(activeAdj.phraseStart))
-                    start = activeAdj.phraseStart;
+                var activeVerb = inventory.GetActive(WordType.Verb);
+                if (activeVerb != null && !string.IsNullOrEmpty(activeVerb.phraseStart))
+                    verbPart = activeVerb.phraseStart;
 
                 var activeNoun = inventory.GetActive(WordType.Noun);
                 if (activeNoun != null && !string.IsNullOrEmpty(activeNoun.phraseEnd))
-                    end = activeNoun.phraseEnd;
+                    nounPart = activeNoun.phraseEnd;
             }
 
-            return $"{start} {end}";
+            return $"{verbPart} {nounPart}";
+        }
+
+        /// <summary>
+        /// Строит outcome-текст с описанием действия и последствием.
+        /// activeVerb/activeNoun передаются явно (т.к. к моменту outcome они уже удалены из инвентаря).
+        /// </summary>
+        public string BuildOutcome(WordSO activeVerb, WordSO activeNoun, bool isPositive)
+        {
+            string action = BuildActionDescription(activeVerb, activeNoun);
+            string consequence = isPositive ? positiveOutcomeText : negativeOutcomeText;
+            return $"{action} {consequence}";
+        }
+
+        private string BuildActionDescription(WordSO verb, WordSO noun)
+        {
+            string verbPast = defaultPhrasePast;
+            string nounPart = defaultPhraseEnd;
+
+            if (verb != null && !string.IsNullOrEmpty(verb.phrasePast))
+                verbPast = verb.phrasePast;
+            if (noun != null && !string.IsNullOrEmpty(noun.phraseEnd))
+                nounPart = noun.phraseEnd;
+
+            return $"Ты {verbPast} {nounPart},";
         }
 
         /// <summary>Вычисляет итоговые дельты с учётом активных слов.</summary>
         public void CalcDeltas(WordInventorySO inventory,
                                out int dHp, out int dPow, out int dSan)
         {
-            // Определяем веса (из активного adj или default)
             float wHp  = defaultHpWeight;
             float wPow = defaultPowWeight;
             float wSan = defaultSanWeight;
 
             if (inventory != null)
             {
-                var activeAdj = inventory.GetActive(WordType.Adjective);
-                if (activeAdj != null)
+                var activeVerb = inventory.GetActive(WordType.Verb);
+                if (activeVerb != null)
                 {
-                    wHp  = activeAdj.hpWeight;
-                    wPow = activeAdj.powWeight;
-                    wSan = activeAdj.sanWeight;
+                    wHp  = activeVerb.hpWeight;
+                    wPow = activeVerb.powWeight;
+                    wSan = activeVerb.sanWeight;
                 }
             }
 
-            // Определяем уменьшение штрафа (из активного noun или default)
             int reduction = defaultPenaltyReduction;
             if (inventory != null)
             {
@@ -107,15 +163,12 @@ namespace Story.Data
                     reduction = activeNoun.penaltyReduction;
             }
 
-            // Итоговый штраф (penalty уже отрицательный, reduction уменьшает его абс. значение)
             int effectivePenalty = totalPenalty + Mathf.Abs(reduction);
-            if (effectivePenalty > 0) effectivePenalty = 0; // не превращаем штраф в бонус
+            if (effectivePenalty > 0) effectivePenalty = 0;
 
-            // Нормализуем веса
             float total = wHp + wPow + wSan;
             if (total <= 0f) total = 1f;
 
-            // Распределяем штраф (округляем к ближайшему)
             dHp  = Mathf.RoundToInt(effectivePenalty * (wHp  / total));
             dPow = Mathf.RoundToInt(effectivePenalty * (wPow / total));
             dSan = Mathf.RoundToInt(effectivePenalty * (wSan / total));

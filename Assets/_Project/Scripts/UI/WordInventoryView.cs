@@ -4,7 +4,7 @@ using Story.Data;
 namespace Story.UI
 {
     /// <summary>
-    /// Управляет двумя панелями слотов (прилагательные и существительные).
+    /// Управляет двумя панелями слотов (глаголы и существительные).
     /// Подписывается на WordInventorySO.OnChanged и перерисовывает слоты.
     /// </summary>
     public class WordInventoryView : MonoBehaviour
@@ -14,15 +14,15 @@ namespace Story.UI
         [SerializeField] private HoverWordChannelSO hoverChannel;
         [SerializeField] private EventWordHighlightView eventHighlight;
 
-        [Header("6 слотов — прилагательные (слева)")]
-        [SerializeField] private WordSlotView[] adjectiveSlots = new WordSlotView[6];
+        [Header("6 слотов — глаголы (слева)")]
+        [SerializeField] private WordSlotView[] verbSlots = new WordSlotView[6];
 
         [Header("6 слотов — существительные (справа)")]
         [SerializeField] private WordSlotView[] nounSlots = new WordSlotView[6];
 
         private void Awake()
         {
-            InitSlots(adjectiveSlots);
+            InitSlots(verbSlots);
             InitSlots(nounSlots);
         }
 
@@ -56,7 +56,7 @@ namespace Story.UI
         {
             if (inventory == null) return;
 
-            RefreshSlots(adjectiveSlots, inventory.adjectives);
+            RefreshSlots(verbSlots, inventory.verbs);
             RefreshSlots(nounSlots,      inventory.nouns);
         }
 

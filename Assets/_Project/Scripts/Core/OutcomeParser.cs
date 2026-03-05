@@ -8,21 +8,21 @@ namespace Story.Core
     /// <summary>
     /// Двухэтапный конвейер для outcome-текста:
     ///
-    /// 1. PreProcess — заменяет токены [adj]/[noun] случайными словами из пула,
-    ///    превращая их в [adj:key] / [noun:key].
+    /// 1. PreProcess — заменяет токены [verb]/[noun] случайными словами из пула,
+    ///    превращая их в [verb:key] / [noun:key].
     ///
-    /// 2. Parse — конвертирует [adj:key] / [noun:key] в TMP rich-text строку:
+    /// 2. Parse — конвертирует [verb:key] / [noun:key] в TMP rich-text строку:
     ///    золото (link) = доступно для сбора, серый = уже в инвентаре.
     /// </summary>
     public static class OutcomeParser
     {
-        // Плейсхолдеры: [adj], [noun]
+        // Плейсхолдеры: [verb], [noun]
         private static readonly Regex SlotPlaceholder =
-            new Regex(@"\[(adj|noun)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            new Regex(@"\[(verb|noun)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Типизированные токены которые выходят из PreProcess
         private static readonly Regex TypedToken =
-            new Regex(@"\[(adj|noun):([^\]]+)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            new Regex(@"\[(verb|noun):([^\]]+)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public const string ColorGold = "#FFD700";
         public const string ColorGray = "#888888";
@@ -31,7 +31,7 @@ namespace Story.Core
         // ── Шаг 1: подстановка пула ───────────────────────────────────────
 
         /// <summary>
-        /// Заменяет плейсхолдеры [adj], [noun] словами из пула.
+        /// Заменяет плейсхолдеры [verb], [noun] словами из пула.
         /// Каждый тип имеет независимую очередь (перемешанную).
         /// Заполняет pickedWords — реально выбранными словами.
         /// </summary>
@@ -46,21 +46,21 @@ namespace Story.Core
             if (string.IsNullOrEmpty(rawText)) return string.Empty;
             if (pool == null || pool.Count == 0) return rawText;
 
-            var adjQueue  = ShuffledQueue(pool, WordType.Adjective, rng);
-            var nounQueue = ShuffledQueue(pool, WordType.Noun,      rng);
+            var verbQueue = ShuffledQueue(pool, WordType.Verb, rng);
+            var nounQueue = ShuffledQueue(pool, WordType.Noun, rng);
 
             return SlotPlaceholder.Replace(rawText, m =>
             {
                 string slot = m.Groups[1].Value.ToLower();
 
-                WordSO word = slot == "adj"
-                    ? Dequeue(adjQueue)
+                WordSO word = slot == "verb"
+                    ? Dequeue(verbQueue)
                     : Dequeue(nounQueue);
 
                 if (word == null) return string.Empty;
 
                 pickedWords.Add(word);
-                string typePart = word.type == WordType.Adjective ? "adj" : "noun";
+                string typePart = word.type == WordType.Verb ? "verb" : "noun";
                 return $"[{typePart}:{word.key}]";
             });
         }
@@ -92,7 +92,7 @@ namespace Story.Core
         // ── Шаг 2: rich-text разметка ─────────────────────────────────────
 
         /// <summary>
-        /// Превращает строку с [adj:key] / [noun:key] в TMP rich-text (upper case).
+        /// Превращает строку с [verb:key] / [noun:key] в TMP rich-text (upper case).
         /// Золото = кликабельно, серый = уже в инвентаре.
         /// </summary>
         public static string Parse(
@@ -138,8 +138,8 @@ namespace Story.Core
 
         private static bool IsOwned(WordInventorySO inv, WordSO word)
         {
-            foreach (var w in inv.adjectives) if (w == word) return true;
-            foreach (var w in inv.nouns)      if (w == word) return true;
+            foreach (var w in inv.verbs) if (w == word) return true;
+            foreach (var w in inv.nouns) if (w == word) return true;
             return false;
         }
     }

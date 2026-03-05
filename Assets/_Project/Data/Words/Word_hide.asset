@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d263413ec01e59149ba7db869d6e0cc6, type: 3}
-  m_Name: Word_shield
+  m_Name: Word_hide
   m_EditorClassIdentifier: Assembly-CSharp::Story.Data.WordSO
-  key: shield
-  displayText: "\u0429\u0438\u0442"
-  type: 1
-  phraseStart: 
-  phrasePast: 
+  key: hide
+  displayText: "\u0421\u043F\u0440\u044F\u0442\u0430\u0442\u044C"
+  type: 0
+  phraseStart: "\u0421\u043F\u0440\u044F\u0442\u0430\u0442\u044C"
+  phrasePast: "\u043F\u0440\u044F\u0447\u0435\u0448\u044C"
   hpWeight: 0
-  powWeight: 0
-  sanWeight: 0
-  phraseEnd: "\u043A\u0440\u0435\u043F\u043A\u0438\u0439 \u0449\u0438\u0442"
-  penaltyReduction: 4
-  nature: 0.2
+  powWeight: 1
+  sanWeight: 2
+  phraseEnd: 
+  penaltyReduction: 0
+  nature: 0.1

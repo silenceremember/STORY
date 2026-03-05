@@ -17,14 +17,23 @@ MonoBehaviour:
     \u041B\u043E\u0448\u0430\u0434\u0438 \u043D\u0435\u0442, \u0431\u043E\u0440\u0442\u0430
     \u0438\u0437\u043B\u043E\u043C\u0430\u043D\u044B."
   totalPenalty: -7
-  defaultPhraseStart: "\u041C\u043E\u043B\u0447\u0430"
+  defaultPhraseStart: "\u041E\u0441\u043C\u043E\u0442\u0440\u0435\u0442\u044C"
+  defaultPhrasePast: "\u043E\u0441\u043C\u0430\u0442\u0440\u0438\u0432\u0430\u0435\u0448\u044C"
   defaultHpWeight: 1
   defaultPowWeight: 1
   defaultSanWeight: 0
-  defaultPhraseEnd: "\u043E\u0441\u043C\u043E\u0442\u0440\u0435\u0442\u044C \u0442\u0435\u043B\u0435\u0433\u0443"
+  defaultPhraseEnd: "\u0442\u0435\u043B\u0435\u0433\u0443"
   defaultPenaltyReduction: 0
-  outcomeText: "\u041F\u043E\u0434 \u0441\u0438\u0434\u0435\u043D\u044C\u0435\u043C
+  favorableWords:
+  - map
+  - torch
+  - use
+  - grab
+  positiveOutcomeText: "\u0438 \u043F\u043E\u0434 \u0441\u0438\u0434\u0435\u043D\u044C\u0435\u043C
     \u0441\u043F\u0440\u044F\u0442\u0430\u043D [noun]."
+  negativeOutcomeText: "\u043D\u043E \u0442\u0435\u043B\u0435\u0433\u0430 \u043F\u0443\u0441\u0442\u0430.
+    \u041B\u0438\u0448\u044C \u0441\u043A\u0440\u0438\u043F \u043A\u043E\u043B\u0451\u0441
+    \u043D\u0430 \u0432\u0435\u0442\u0440\u0443."
   rewardWordPool:
   - {fileID: 11400000, guid: c40a153664ed3274fa89f2e2008a89fa, type: 2}
   - {fileID: 11400000, guid: 693bf60f3f55d55498d00b87d7ec9ec5, type: 2}

@@ -1524,7 +1524,7 @@ GameObject:
   - component: {fileID: 659689523}
   - component: {fileID: 659689527}
   m_Layer: 5
-  m_Name: WordSlot_Adj_0
+  m_Name: WordSlot_Verb_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1595,7 +1595,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: WordSlot_Adj_0
+  m_text: WordSlot_Verb_0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
   m_sharedMaterial: {fileID: 710262186361086494, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
@@ -1706,7 +1706,7 @@ GameObject:
   - component: {fileID: 666031096}
   - component: {fileID: 666031100}
   m_Layer: 5
-  m_Name: WordSlot_Adj_5
+  m_Name: WordSlot_Verb_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1777,7 +1777,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: WordSlot_Adj_5
+  m_text: WordSlot_Verb_5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
   m_sharedMaterial: {fileID: 710262186361086494, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
@@ -2460,7 +2460,7 @@ GameObject:
   - component: {fileID: 1373919436}
   - component: {fileID: 1373919440}
   m_Layer: 5
-  m_Name: WordSlot_Adj_3
+  m_Name: WordSlot_Verb_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2531,7 +2531,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: WordSlot_Adj_3
+  m_text: WordSlot_Verb_3
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
   m_sharedMaterial: {fileID: 710262186361086494, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
@@ -2710,7 +2710,7 @@ GameObject:
   - component: {fileID: 1534009226}
   - component: {fileID: 1534009230}
   m_Layer: 5
-  m_Name: WordSlot_Adj_2
+  m_Name: WordSlot_Verb_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2781,7 +2781,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: WordSlot_Adj_2
+  m_text: WordSlot_Verb_2
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
   m_sharedMaterial: {fileID: 710262186361086494, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
@@ -3058,8 +3058,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c7e87011b834924f8f9b7f8811f9878, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Story.UI.EventWordHighlightView
-  hoverChannel: {fileID: 11400000, guid: 620529645b1092f4cbfa8d0f7c5cb07a, type: 2}
-  wordInventory: {fileID: 0}
 --- !u!1 &1657582658
 GameObject:
   m_ObjectHideFlags: 0
@@ -3257,7 +3255,7 @@ GameObject:
   - component: {fileID: 1697975078}
   - component: {fileID: 1697975082}
   m_Layer: 5
-  m_Name: WordSlot_Adj_4
+  m_Name: WordSlot_Verb_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3328,7 +3326,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: WordSlot_Adj_4
+  m_text: WordSlot_Verb_4
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
   m_sharedMaterial: {fileID: 710262186361086494, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
@@ -3439,7 +3437,7 @@ GameObject:
   - component: {fileID: 1785940594}
   - component: {fileID: 1785940598}
   m_Layer: 5
-  m_Name: WordSlot_Adj_1
+  m_Name: WordSlot_Verb_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3510,7 +3508,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: WordSlot_Adj_1
+  m_text: WordSlot_Verb_1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}
   m_sharedMaterial: {fileID: 710262186361086494, guid: 6a7aab3e976951d469b681c7eae4f61e, type: 2}

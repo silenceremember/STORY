@@ -133,32 +133,46 @@ namespace Story
 
             if (hoveredWord == null)
             {
-                // Снято наведение — возвращаем текущую фразу
                 SetActionButtonText(_currentLoopEvent.BuildPhrase(wordInventory));
                 return;
             }
 
-            // Превью: берём текущую фразу и подставляем hovered слово
-            string start = _currentLoopEvent.defaultPhraseStart;
-            string end   = _currentLoopEvent.defaultPhraseEnd;
+            // Определяем verb и noun «как если бы» hovered слово было активировано
+            string verbPart = null;
+            string nounPart = null;
 
             if (wordInventory != null)
             {
-                var activeAdj = wordInventory.GetActive(WordType.Adjective);
-                if (activeAdj != null && !string.IsNullOrEmpty(activeAdj.phraseStart))
-                    start = activeAdj.phraseStart;
+                var activeVerb = wordInventory.GetActive(WordType.Verb);
+                if (activeVerb != null && !string.IsNullOrEmpty(activeVerb.phraseStart))
+                    verbPart = activeVerb.phraseStart;
+
                 var activeNoun = wordInventory.GetActive(WordType.Noun);
                 if (activeNoun != null && !string.IsNullOrEmpty(activeNoun.phraseEnd))
-                    end = activeNoun.phraseEnd;
+                    nounPart = activeNoun.phraseEnd;
             }
 
-            // Hovered слово заменяет свой тип (gold highlight)
-            if (hoveredWord.type == WordType.Adjective && !string.IsNullOrEmpty(hoveredWord.phraseStart))
-                start = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseStart}</color>";
+            // Hovered слово подсвечивается gold и замещает свой тип
+            if (hoveredWord.type == WordType.Verb && !string.IsNullOrEmpty(hoveredWord.phraseStart))
+                verbPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseStart}</color>";
             else if (hoveredWord.type == WordType.Noun && !string.IsNullOrEmpty(hoveredWord.phraseEnd))
-                end = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseEnd}</color>";
+                nounPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseEnd}</color>";
 
-            SetActionButtonText($"{start} {end}");
+            // Строим фразу — дефолт НЕ смешивается с инвентарём
+            bool hasVerb = verbPart != null;
+            bool hasNoun = nounPart != null;
+
+            string phrase;
+            if (!hasVerb && !hasNoun)
+                phrase = _currentLoopEvent.defaultPhraseStart;
+            else if (hasVerb && !hasNoun)
+                phrase = verbPart;
+            else if (!hasVerb && hasNoun)
+                phrase = $"Использовать {nounPart}";
+            else
+                phrase = $"{verbPart} {nounPart}";
+
+            SetActionButtonText(phrase);
         }
 
         private void SetActionButtonText(string phrase)
@@ -216,20 +230,21 @@ namespace Story
 
                     if (actionButton != null) actionButton.Interactable = false;
 
-                    // 5. Применить intent+action + потратить активные слова
-                    // Запоминаем до Process, т.к. ClearActive обнулит
-                    var usedAdj  = wordInventory?.GetActive(WordType.Adjective);
+                    // 5. Рассчитать nature ПЕРЕД удалением слов
+                    bool isPositive = ev.IsPositiveOutcome(wordInventory);
+
+                    // 6. Применить intent+action + потратить активные слова
+                    var usedVerb = wordInventory?.GetActive(WordType.Verb);
                     var usedNoun = wordInventory?.GetActive(WordType.Noun);
 
                     bool gameOver = ChoiceProcessor.Process(ev, gameState, stats, endings, wordInventory);
 
-                    // Расходуем использованные слова
-                    if (usedAdj  != null) wordInventory.Remove(usedAdj);
+                    if (usedVerb != null) wordInventory.Remove(usedVerb);
                     if (usedNoun != null) wordInventory.Remove(usedNoun);
 
                     gameState.RaiseChanged();
 
-                    // 6. Стереть event-текст и кнопку
+                    // 7. Стереть event-текст и кнопку
                     var eraseMain   = mainTypewriter.EraseCurrentAsync(ct);
                     var eraseAction = actionTypewriter != null
                         ? actionTypewriter.EraseCurrentAsync(ct)
@@ -237,23 +252,35 @@ namespace Story
                     await UniTask.WhenAll(eraseMain, eraseAction);
                     actionPanel?.SetActive(false);
 
-                    // 7. Показать outcome с кликабельными словами-наградами
-                    _currentLoopEvent = null; // блокируем live-update фразы
-                    if (!string.IsNullOrWhiteSpace(ev.outcomeText))
+                    // 8. Показать outcome (зависит от nature)
+                    _currentLoopEvent = null;
+                    string outcomeRaw = ev.BuildOutcome(usedVerb, usedNoun, isPositive);
+
+                    if (!string.IsNullOrWhiteSpace(outcomeRaw))
                     {
-                        _pickedWords.Clear();
-                        string processed = OutcomeParser.PreProcess(
-                            ev.outcomeText,
-                            ev.rewardWordPool,
-                            gameState.rng,
-                            _pickedWords);
+                        if (isPositive)
+                        {
+                            // Positive: кликабельные слова-награды
+                            _pickedWords.Clear();
+                            string processed = OutcomeParser.PreProcess(
+                                outcomeRaw,
+                                ev.rewardWordPool,
+                                gameState.rng,
+                                _pickedWords);
 
-                        string richText = OutcomeParser.Parse(
-                            processed, wordDatabase, wordInventory);
+                            string richText = OutcomeParser.Parse(
+                                processed, wordDatabase, wordInventory);
 
-                        outcomeWordClickHandler?.Activate(processed);
-                        eventWordHighlightView?.SetOutcomePhase(richText);
-                        await mainTypewriter.PlayRichAsync(richText, ct);
+                            outcomeWordClickHandler?.Activate(processed);
+                            eventWordHighlightView?.SetOutcomePhase(richText);
+                            await mainTypewriter.PlayRichAsync(richText, ct);
+                        }
+                        else
+                        {
+                            // Negative: обычный текст без наград
+                            eventWordHighlightView?.SetOutcomePhase(outcomeRaw);
+                            await mainTypewriter.PlayAsync(outcomeRaw, ct);
+                        }
 
                         // Кнопка "Продолжить"
                         actionPanel?.SetActive(true);

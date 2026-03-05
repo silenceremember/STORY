@@ -2,16 +2,16 @@ using UnityEngine;
 
 namespace Story.Data
 {
-    public enum WordType { Adjective, Noun }
+    public enum WordType { Verb, Noun }
 
     /// <summary>
-    /// Описывает одно слово (прилагательное или существительное).
+    /// Описывает одно слово (глагол или существительное).
     ///
-    /// Adjective → определяет «намерение» (intent):
-    ///   phraseStart + распределение штрафа по статам (hpWeight/powWeight/sanWeight).
+    /// Verb → определяет «намерение» (intent):
+    ///   phraseStart (инфинитив глагола) + распределение штрафа (hpWeight/powWeight/sanWeight).
     ///
     /// Noun → определяет «действие» (action):
-    ///   phraseEnd + величину уменьшения штрафа (penaltyReduction).
+    ///   phraseEnd (объект в вин. падеже с контекстом) + уменьшение штрафа (penaltyReduction).
     /// </summary>
     [CreateAssetMenu(fileName = "Word_New", menuName = "Story/Word")]
     public class WordSO : ScriptableObject
@@ -21,11 +21,13 @@ namespace Story.Data
         public string key         = "";
         [Tooltip("Текст, отображаемый в инвентарном слоте")]
         public string displayText = "Слово";
-        public WordType type      = WordType.Adjective;
+        public WordType type      = WordType.Verb;
 
-        [Header("Intent — только для adj")]
-        [Tooltip("Начало составной фразы ответа, напр. «Храбро»")]
+        [Header("Intent — только для verb")]
+        [Tooltip("Инфинитив глагола, напр. «Метнуть»")]
         public string phraseStart = "";
+        [Tooltip("2-е лицо наст. вр., напр. «швыряешь» — для outcome-текста")]
+        public string phrasePast = "";
         [Tooltip("Доля штрафа → HP (нормализуется с pow/san)")]
         public float hpWeight  = 1f;
         [Tooltip("Доля штрафа → POW")]
@@ -34,9 +36,14 @@ namespace Story.Data
         public float sanWeight = 1f;
 
         [Header("Action — только для noun")]
-        [Tooltip("Конец составной фразы ответа, напр. «ударить мечом»")]
+        [Tooltip("Объект с контекстом в вин. падеже, напр. «острый кинжал»")]
         public string phraseEnd = "";
         [Tooltip("На сколько единиц уменьшается общий штраф при использовании")]
         public int penaltyReduction = 0;
+
+        [Header("Настроение")]
+        [Tooltip("От -1 (агрессия) до +1 (помощь). Определяет positive/negative outcome.")]
+        [Range(-1f, 1f)]
+        public float nature = 0f;
     }
 }

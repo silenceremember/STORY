@@ -7,7 +7,7 @@ namespace Story.Editor
 {
     /// <summary>
     /// Tools → Story → Generate Word Assets
-    /// 10 adj + 10 noun с данными для Intent+Action системы.
+    /// 10 verb + 10 noun с данными для Intent+Action + Nature системы.
     /// </summary>
     public static class WordAssetGenerator
     {
@@ -16,77 +16,84 @@ namespace Story.Editor
             public string key;
             public string display;
             public WordType type;
-            // Intent (adj)
+            // Intent (verb)
             public string phraseStart;
+            public string phrasePast;   // 2-е лицо наст. вр. ("швыряешь")
             public float hpW, powW, sanW;
             // Action (noun)
             public string phraseEnd;
             public int reduction;
+            // Sentiment
+            public float nature;
         }
 
         private static readonly WordData[] Words = new[]
         {
-            // ── Прилагательные (Intent) ──────────────────────────────────
-            new WordData { key="brave",     display="Храбрый",    type=WordType.Adjective,
-                phraseStart="Храбро",     hpW=3f, powW=1f, sanW=0f },
+            // ── Глаголы (Intent) ─────────────────────────────────────────
+            // phraseStart = инфинитив, phrasePast = 2-е лицо наст. вр.
+            // nature: > 0 дружелюбно, < 0 агрессивно
+            new WordData { key="hurl",      display="Швырнуть",   type=WordType.Verb,
+                phraseStart="Швырнуть",   phrasePast="швыряешь",      hpW=3f, powW=1f, sanW=0f, nature=-0.4f },
 
-            new WordData { key="cunning",   display="Хитрый",     type=WordType.Adjective,
-                phraseStart="Хитро",      hpW=0f, powW=1f, sanW=3f },
+            new WordData { key="throw",     display="Метнуть",    type=WordType.Verb,
+                phraseStart="Метнуть",    phrasePast="метаешь",       hpW=2f, powW=2f, sanW=0f, nature=-0.5f },
 
-            new WordData { key="resilient", display="Стойкий",    type=WordType.Adjective,
-                phraseStart="Стойко",     hpW=2f, powW=1f, sanW=1f },
+            new WordData { key="give",      display="Подарить",   type=WordType.Verb,
+                phraseStart="Подарить",   phrasePast="даришь",        hpW=0f, powW=1f, sanW=0f, nature= 0.8f },
 
-            new WordData { key="brutal",    display="Жестокий",   type=WordType.Adjective,
-                phraseStart="Жестоко",    hpW=1f, powW=0f, sanW=3f },
+            new WordData { key="show",      display="Показать",   type=WordType.Verb,
+                phraseStart="Показать",   phrasePast="показываешь",   hpW=0f, powW=0f, sanW=1f, nature= 0.3f },
 
-            new WordData { key="cautious",  display="Осторожный", type=WordType.Adjective,
-                phraseStart="Осторожно",  hpW=1f, powW=1f, sanW=1f },
+            new WordData { key="use",       display="Применить",  type=WordType.Verb,
+                phraseStart="Применить",  phrasePast="применяешь",    hpW=1f, powW=1f, sanW=1f, nature= 0.5f },
 
-            new WordData { key="hungry",    display="Голодный",   type=WordType.Adjective,
-                phraseStart="Отчаянно",   hpW=0f, powW=3f, sanW=1f },
+            new WordData { key="hide",      display="Спрятать",   type=WordType.Verb,
+                phraseStart="Спрятать",   phrasePast="прячешь",       hpW=0f, powW=1f, sanW=2f, nature= 0.1f },
 
-            new WordData { key="strong",    display="Сильный",    type=WordType.Adjective,
-                phraseStart="Мощно",      hpW=1f, powW=3f, sanW=0f },
+            new WordData { key="toss",      display="Бросить",    type=WordType.Verb,
+                phraseStart="Бросить",    phrasePast="бросаешь",      hpW=1f, powW=2f, sanW=1f, nature=-0.3f },
 
-            new WordData { key="weary",     display="Усталый",    type=WordType.Adjective,
-                phraseStart="Вяло",       hpW=1f, powW=1f, sanW=2f },
+            new WordData { key="offer",     display="Предложить", type=WordType.Verb,
+                phraseStart="Предложить", phrasePast="предлагаешь",   hpW=0f, powW=0f, sanW=1f, nature= 0.7f },
 
-            new WordData { key="wise",      display="Мудрый",     type=WordType.Adjective,
-                phraseStart="Мудро",      hpW=0f, powW=0f, sanW=1f },
+            new WordData { key="grab",      display="Выхватить",  type=WordType.Verb,
+                phraseStart="Выхватить",  phrasePast="выхватываешь",  hpW=2f, powW=2f, sanW=0f, nature=-0.3f },
 
-            new WordData { key="mad",       display="Безумный",   type=WordType.Adjective,
-                phraseStart="Безумно",    hpW=3f, powW=0f, sanW=3f },
+            new WordData { key="raise",     display="Поднять",    type=WordType.Verb,
+                phraseStart="Поднять",    phrasePast="поднимаешь",    hpW=1f, powW=1f, sanW=1f, nature= 0.0f },
 
             // ── Существительные (Action) ─────────────────────────────────
+            // phraseEnd = объект в вин. падеже + контекст
+            // nature: > 0 мирное/полезное, < 0 агрессивное/опасное
             new WordData { key="sword",     display="Меч",        type=WordType.Noun,
-                phraseEnd="ударить мечом",      reduction=5 },
+                phraseEnd="верный клинок",           reduction=5, nature=-0.5f },
 
             new WordData { key="shield",    display="Щит",        type=WordType.Noun,
-                phraseEnd="прикрыться щитом",   reduction=4 },
+                phraseEnd="крепкий щит",             reduction=4, nature= 0.2f },
 
             new WordData { key="torch",     display="Факел",      type=WordType.Noun,
-                phraseEnd="осветить факелом",   reduction=3 },
+                phraseEnd="горящий факел",           reduction=3, nature= 0.1f },
 
             new WordData { key="medicine",  display="Лекарство",  type=WordType.Noun,
-                phraseEnd="применить лекарство", reduction=6 },
+                phraseEnd="целебное зелье",          reduction=6, nature= 0.9f },
 
             new WordData { key="map",       display="Карта",      type=WordType.Noun,
-                phraseEnd="свериться с картой", reduction=4 },
+                phraseEnd="старую карту",            reduction=4, nature= 0.3f },
 
             new WordData { key="rations",   display="Провиант",   type=WordType.Noun,
-                phraseEnd="поделиться провиантом", reduction=3 },
+                phraseEnd="горсть провианта",        reduction=3, nature= 0.7f },
 
             new WordData { key="amulet",    display="Амулет",     type=WordType.Noun,
-                phraseEnd="коснуться амулета",  reduction=4 },
+                phraseEnd="древний амулет",          reduction=4, nature= 0.4f },
 
             new WordData { key="poison",    display="Яд",         type=WordType.Noun,
-                phraseEnd="использовать яд",    reduction=5 },
+                phraseEnd="склянку с ядом",          reduction=5, nature=-0.7f },
 
             new WordData { key="book",      display="Книга",      type=WordType.Noun,
-                phraseEnd="прочесть заклинание", reduction=3 },
+                phraseEnd="старинный фолиант",       reduction=3, nature= 0.3f },
 
             new WordData { key="dagger",    display="Кинжал",     type=WordType.Noun,
-                phraseEnd="метнуть кинжал",     reduction=5 },
+                phraseEnd="острый кинжал",           reduction=5, nature=-0.7f },
         };
 
         // ── Меню ────────────────────────────────────────────────────────────
@@ -116,8 +123,9 @@ namespace Story.Editor
                 so.displayText = data.display;
                 so.type        = data.type;
 
-                // Intent (adj)
+                // Intent (verb)
                 so.phraseStart = data.phraseStart ?? "";
+                so.phrasePast  = data.phrasePast ?? "";
                 so.hpWeight    = data.hpW;
                 so.powWeight   = data.powW;
                 so.sanWeight   = data.sanW;
@@ -125,6 +133,9 @@ namespace Story.Editor
                 // Action (noun)
                 so.phraseEnd        = data.phraseEnd ?? "";
                 so.penaltyReduction = data.reduction;
+
+                // Nature
+                so.nature = data.nature;
 
                 if (existing == null)
                     AssetDatabase.CreateAsset(so, path);

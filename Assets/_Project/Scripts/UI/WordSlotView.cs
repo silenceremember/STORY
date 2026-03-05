@@ -11,10 +11,11 @@ namespace Story.UI
     ///
     /// Состояния:
     ///   • Обычное  → белый
-    ///   • Активное → серый
+    ///   • Активное → серый (через TMP rich-text)
     ///   • Outcome-фаза → клик/hover заблокированы
     ///
-    /// Клик = ToggleActive (слово остаётся в инвентаре, меняет фразу ответа).
+    /// Клик = ToggleActive → слово используется в составной фразе.
+    /// Слово расходуется после нажатия кнопки действия.
     /// </summary>
     public class WordSlotView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
@@ -34,6 +35,18 @@ namespace Story.UI
 
             if (button != null)
                 button.OnClick += OnClick;
+        }
+
+        private void OnEnable()
+        {
+            if (inventory != null)
+                inventory.OnChanged += RefreshDisplay;
+        }
+
+        private void OnDisable()
+        {
+            if (inventory != null)
+                inventory.OnChanged -= RefreshDisplay;
         }
 
         private void OnDestroy()
@@ -63,8 +76,6 @@ namespace Story.UI
         public void OnPointerEnter(PointerEventData _)
         {
             if (_word == null) return;
-
-            // В outcome-фазе — ничего не делаем
             if (eventHighlight != null && eventHighlight.IsOutcomePhase) return;
 
             hoverChannel?.SetHovered(_word);
@@ -73,7 +84,6 @@ namespace Story.UI
         public void OnPointerExit(PointerEventData _)
         {
             hoverChannel?.SetHovered(null);
-            RefreshDisplay();
         }
 
         // ── Click ─────────────────────────────────────────────────────────
@@ -81,8 +91,6 @@ namespace Story.UI
         private void OnClick()
         {
             if (_word == null) return;
-
-            // В outcome-фазе — клик игнорируется
             if (eventHighlight != null && eventHighlight.IsOutcomePhase) return;
 
             inventory?.ToggleActive(_word);

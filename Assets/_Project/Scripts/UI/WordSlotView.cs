@@ -53,7 +53,7 @@ namespace Story.UI
             var tmp = button != null
                 ? button.GetComponentInChildren<TMP_Text>()
                 : null;
-            if (tmp != null) tmp.text = word.displayText;
+            if (tmp != null) tmp.text = word.displayText.ToUpperInvariant();
         }
 
         // ── Pointer events ────────────────────────────────────────────────

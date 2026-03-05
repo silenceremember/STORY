@@ -192,6 +192,7 @@ namespace Story
                             processed, wordDatabase, wordInventory);
 
                         outcomeWordClickHandler?.Activate(processed);
+                        eventWordHighlightView?.SetOutcomeContent(richText);
                         await mainTypewriter.PlayRichAsync(richText, ct);
 
                         // Набираем лейбл кнопки, затем ждём нажатия
@@ -207,6 +208,7 @@ namespace Story
                         actionTypewriter?.Clear();
 
                         outcomeWordClickHandler?.Deactivate();
+                        eventWordHighlightView?.ClearContent();
                         await mainTypewriter.EraseCurrentAsync(ct);
                     }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using Story.Data;
@@ -9,12 +8,13 @@ using Story.Data;
 namespace Story.UI
 {
     /// <summary>
-    /// Typewriter-эффект. Вешается прямо на GameObject с TMP_Text.
+    /// Typewriter-эффект через maxVisibleCharacters — теги TMP никогда не видны.
     ///
-    /// Fire-and-forget API: Play(), Erase(), Clear(), Skip()
-    /// Awaitable API:       PlayAsync(), PlayCurrentAsync(), EraseCurrentAsync()
+    /// Fire-and-forget:  Play(), Erase(), Clear(), Skip()
+    /// Awaitable:        PlayAsync(), PlayRichAsync(), PlayCurrentAsync(), EraseCurrentAsync()
     ///
-    /// Весь текст автоматически приводится к UPPER CASE.
+    /// Для обычного текста: приводится к UPPER CASE.
+    /// Для rich-text (PlayRichAsync): передаётся как есть (теги уже подготовлены снаружи).
     /// </summary>
     [RequireComponent(typeof(TMP_Text))]
     public class TypewriterEffect : MonoBehaviour
@@ -23,24 +23,24 @@ namespace Story.UI
         [SerializeField] private TypewriterConfigSO config;
 
         // ── Config getters ────────────────────────────────────────────────
-        private float  CharDelay    => config.charDelay;
-        private float  EraseDelay   => config.eraseDelay;
+        private float CharDelay  => config.charDelay;
+        private float EraseDelay => config.eraseDelay;
 
         // ── State ─────────────────────────────────────────────────────────
-        private TMP_Text                 _text;
-        private string                   _originalText;  // текст из сцены, сохраняется до Awake-очистки
+        private TMP_Text                _text;
+        private string                  _originalText;
         private CancellationTokenSource _cts;
         public  bool IsRunning { get; private set; }
 
         /// <summary>Прямой доступ к TMP_Text (нужен OutcomeWordClickHandler).</summary>
-        public  TMP_Text TextComponent => _text;
+        public TMP_Text TextComponent => _text;
 
         // ── Unity lifecycle ───────────────────────────────────────────────
         private void Awake()
         {
-            _text = GetComponent<TMP_Text>();
-            _originalText = _text.text;     // сохраняем до очистки
-            _text.text    = string.Empty;   // скрываем до первого Play
+            _text         = GetComponent<TMP_Text>();
+            _originalText = _text.text;
+            Clear();
         }
 
         private void OnDisable() => CancelInternal();
@@ -57,32 +57,30 @@ namespace Story.UI
 
         public void Erase()
         {
-            var current = _text.text;
             CancelInternal();
-            if (string.IsNullOrEmpty(current)) return;
             _cts = new CancellationTokenSource();
-            EraseCoreAsync(current, _cts.Token).SuppressCancellationThrow().Forget();
+            EraseCoreAsync(_cts.Token).SuppressCancellationThrow().Forget();
         }
 
         public void Clear()
         {
             CancelInternal();
-            DOTween.Kill(_text);
-            _text.text  = string.Empty;
+            _text.text                 = string.Empty;
+            _text.maxVisibleCharacters = int.MaxValue;
         }
 
         public void Skip(string fullText = null)
         {
             CancelInternal();
-            DOTween.Kill(_text);
-            if (fullText != null) _text.text = Sanitize(fullText);
+            if (fullText != null) SetFull(Sanitize(fullText));
+            else _text.maxVisibleCharacters = int.MaxValue;
         }
 
         public void Cancel() => CancelInternal();
 
         // ── Awaitable API ─────────────────────────────────────────────────
 
-        /// <summary>Написать текст. Бросает OperationCanceledException при отмене.</summary>
+        /// <summary>Написать текст (UPPER CASE). Бросает OperationCanceledException при отмене.</summary>
         public UniTask PlayAsync(string text, CancellationToken ct = default)
         {
             CancelInternal();
@@ -96,10 +94,10 @@ namespace Story.UI
         public UniTask PlayRichAsync(string richText, CancellationToken ct = default)
         {
             CancelInternal();
-            return TypeRichCoreAsync(richText, ct);
+            return TypeCoreAsync(richText, ct);   // тот же алгоритм, Sanitize не нужен
         }
 
-        /// <summary>Напечатать текст, заданный на компоненте в сцене (сохранён до Awake-очистки).</summary>
+        /// <summary>Напечатать текст, заданный в сцене (сохранён до Awake-очистки).</summary>
         public UniTask PlayCurrentAsync(CancellationToken ct = default)
         {
             CancelInternal();
@@ -107,13 +105,11 @@ namespace Story.UI
             return TypeCoreAsync(Sanitize(_originalText), ct);
         }
 
-        /// <summary>Стереть текущий текст. Бросает OperationCanceledException при отмене.</summary>
+        /// <summary>Стереть текущий текст через maxVisibleCharacters.</summary>
         public UniTask EraseCurrentAsync(CancellationToken ct = default)
         {
-            var current = _text.text;
             CancelInternal();
-            if (string.IsNullOrEmpty(current)) return UniTask.CompletedTask;
-            return EraseCoreAsync(current, ct);
+            return EraseCoreAsync(ct);
         }
 
         // ── Internal ──────────────────────────────────────────────────────
@@ -121,40 +117,36 @@ namespace Story.UI
         private static string Sanitize(string text)
             => string.IsNullOrEmpty(text) ? string.Empty : text.ToUpperInvariant();
 
+        private void SetFull(string text)
+        {
+            _text.richText             = true;
+            _text.text                 = text;
+            _text.maxVisibleCharacters = int.MaxValue;
+            _text.ForceMeshUpdate();
+        }
+
         private void CancelInternal()
         {
             if (_cts == null) return;
             _cts.Cancel();
             _cts.Dispose();
-            _cts = null;
+            _cts      = null;
             IsRunning = false;
         }
 
-        private async UniTask TypeCoreAsync(string text, CancellationToken ct)
+        /// <summary>
+        /// Единый алгоритм набора — работает и для обычного текста, и для rich-text.
+        /// Полностью устанавливает _text.text, затем приоткрывает по одному символу.
+        /// </summary>
+        private async UniTask TypeCoreAsync(string fullText, CancellationToken ct)
         {
-            IsRunning   = true;
-            _text.text  = string.Empty;
-            try
-            {
-                for (int i = 0; i <= text.Length; i++)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    _text.text = text[..i];
-                    if (i < text.Length)
-                        await UniTask.Delay(TimeSpan.FromSeconds(CharDelay), cancellationToken: ct);
-                }
-            }
-            finally { IsRunning = false; }
-        }
-
-        private async UniTask TypeRichCoreAsync(string richText, CancellationToken ct)
-        {
-            IsRunning             = true;
-            _text.richText        = true;
-            _text.text            = richText;
+            IsRunning              = true;
+            _text.richText         = true;
+            _text.text             = fullText;
             _text.maxVisibleCharacters = 0;
             _text.ForceMeshUpdate();
             int total = _text.textInfo.characterCount;
+
             try
             {
                 for (int i = 0; i <= total; i++)
@@ -167,24 +159,32 @@ namespace Story.UI
             }
             finally
             {
-                // Сбрасываем ограничение после завершения
                 _text.maxVisibleCharacters = int.MaxValue;
                 IsRunning = false;
             }
         }
 
-        private async UniTask EraseCoreAsync(string text, CancellationToken ct)
+        /// <summary>
+        /// Стирание через убывающий maxVisibleCharacters.
+        /// </summary>
+        private async UniTask EraseCoreAsync(CancellationToken ct)
         {
             IsRunning = true;
+            _text.ForceMeshUpdate();
+            int total = _text.textInfo.characterCount;
+            _text.maxVisibleCharacters = total;
+
             try
             {
-                for (int i = text.Length; i >= 0; i--)
+                for (int i = total; i >= 0; i--)
                 {
                     ct.ThrowIfCancellationRequested();
-                    _text.text = text[..i];
+                    _text.maxVisibleCharacters = i;
                     if (i > 0)
                         await UniTask.Delay(TimeSpan.FromSeconds(EraseDelay), cancellationToken: ct);
                 }
+                _text.text                 = string.Empty;
+                _text.maxVisibleCharacters = int.MaxValue;
             }
             finally { IsRunning = false; }
         }

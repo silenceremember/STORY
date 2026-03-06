@@ -223,5 +223,26 @@ namespace Story.Data
             dPow = Mathf.RoundToInt(effectivePenalty * (wPow / total));
             dSan = Mathf.RoundToInt(effectivePenalty * (wSan / total));
         }
+
+        /// <summary>Вычисляет дельты для конкретного глагола и существительного (для hover-превью).</summary>
+        public void CalcDeltasForHover(WordSO verb, WordSO noun,
+                                       out int dHp, out int dPow, out int dSan)
+        {
+            float wHp  = verb != null ? verb.hpWeight  : defaultHpWeight;
+            float wPow = verb != null ? verb.powWeight : defaultPowWeight;
+            float wSan = verb != null ? verb.sanWeight : defaultSanWeight;
+
+            int reduction = noun != null ? noun.penaltyReduction : defaultPenaltyReduction;
+
+            int effectivePenalty = totalPenalty + Mathf.Abs(reduction);
+            if (effectivePenalty > 0) effectivePenalty = 0;
+
+            float total = wHp + wPow + wSan;
+            if (total <= 0f) total = 1f;
+
+            dHp  = Mathf.RoundToInt(effectivePenalty * (wHp  / total));
+            dPow = Mathf.RoundToInt(effectivePenalty * (wPow / total));
+            dSan = Mathf.RoundToInt(effectivePenalty * (wSan / total));
+        }
     }
 }

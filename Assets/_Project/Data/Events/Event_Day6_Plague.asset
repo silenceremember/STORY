@@ -18,12 +18,12 @@ MonoBehaviour:
     \xAB\u041F\u043E\u043C\u043E\u0433\u0438 \u043D\u0430\u043C, \u043F\u0443\u0442\u043D\u0438\u043A...
     \u043C\u044B \u043F\u043E\u0433\u0438\u0431\u0430\u0435\u043C.\xBB"
   totalPenalty: -18
-  defaultPhraseStart: "\u041E\u0441\u043C\u043E\u0442\u0440\u0435\u0442\u044C"
-  defaultPhrasePast: "\u043E\u0441\u043C\u0430\u0442\u0440\u0438\u0432\u0430\u0435\u0448\u044C"
+  defaultPhraseStart: "\u041F\u043E\u0434\u0430\u0440\u0438\u0442\u044C"
+  defaultPhrasePast: "\u0434\u0430\u0440\u0438\u0448\u044C"
   defaultHpWeight: 2
   defaultPowWeight: 1
   defaultSanWeight: 1
-  defaultPhraseEnd: "\u0434\u0435\u0440\u0435\u0432\u043D\u044E"
+  defaultPhraseEnd: "\u043D\u0430\u0434\u0435\u0436\u0434\u0443"
   defaultPenaltyReduction: 0
   baseChance: 0.2
   favorableBonus: 0.3
@@ -32,6 +32,8 @@ MonoBehaviour:
   - rations
   - give
   - offer
+  - show
+  - use
   positiveOutcomeText: "\u0438 \u0437\u043D\u0430\u0445\u0430\u0440\u043A\u0430 \u0431\u043B\u0430\u0433\u043E\u0434\u0430\u0440\u0438\u0442:
     \xAB\u0422\u044B \u0441\u043F\u0430\u0441 \u043D\u0430\u0441\xBB. \u041E\u043D\u0430
     \u0432\u0440\u0443\u0447\u0430\u0435\u0442 [noun] \u0438 [verb]."

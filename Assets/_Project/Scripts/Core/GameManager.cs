@@ -43,8 +43,9 @@ namespace Story
         [SerializeField] private GameObject       actionPanel;
         [SerializeField] private TextButton       actionButton;
 
-        [Header("Отображение шанса")]
+        [Header("Отображение шанса и штрафа")]
         [SerializeField] private TMP_Text chanceText;
+        [SerializeField] private PenaltyPreviewView penaltyPreview;
 
         [Header("Outcome Word System")]
         [SerializeField] private OutcomeWordClickHandler outcomeWordClickHandler;
@@ -128,6 +129,13 @@ namespace Story
             if (eventWordHighlightView != null && eventWordHighlightView.IsOutcomePhase) return;
             SetActionButtonText(_currentLoopEvent.BuildPhrase(wordInventory));
             UpdateChanceDisplay(_currentLoopEvent.CalcChance(wordInventory));
+
+            // Update penalty preview
+            if (penaltyPreview != null)
+            {
+                _currentLoopEvent.CalcDeltas(wordInventory, out int dHp, out int dPow, out int dSan);
+                penaltyPreview.SetTargets(dHp, dPow, dSan);
+            }
         }
 
         /// <summary>При наведении на слово в инвентаре — превью фразы + шанса на кнопке.</summary>
@@ -199,6 +207,23 @@ namespace Story
                 UpdateChanceDisplay($"<color={chanceColor}>{pctNew}%</color>");
             else
                 UpdateChanceDisplay(previewChance);
+
+            // Penalty preview for hovered word
+            if (penaltyPreview != null)
+            {
+                WordSO previewVerb = null;
+                WordSO previewNoun = null;
+                if (wordInventory != null)
+                {
+                    previewVerb = wordInventory.GetActive(WordType.Verb);
+                    previewNoun = wordInventory.GetActive(WordType.Noun);
+                }
+                if (hoveredWord.type == WordType.Verb)  previewVerb = hoveredWord;
+                if (hoveredWord.type == WordType.Noun)  previewNoun = hoveredWord;
+
+                ev.CalcDeltasForHover(previewVerb, previewNoun, out int dHp, out int dPow, out int dSan);
+                penaltyPreview.SetTargets(dHp, dPow, dSan);
+            }
         }
 
         private void SetActionButtonText(string phrase)
@@ -267,6 +292,14 @@ namespace Story
                     float defaultChance = ev.CalcChance(null);
                     actionPanel?.SetActive(true);
                     UpdateChanceDisplay(defaultChance);
+
+                    // Show penalty preview: animate from 0 to default deltas
+                    if (penaltyPreview != null)
+                    {
+                        ev.CalcDeltas(null, out int dHp, out int dPow, out int dSan);
+                        penaltyPreview.ShowFrom(dHp, dPow, dSan);
+                    }
+
                     if (actionButton != null) actionButton.Interactable = false;
                     if (actionTypewriter != null)
                         await actionTypewriter.PlayAsync(defaultPhrase, ct);
@@ -278,6 +311,7 @@ namespace Story
 
                     if (actionButton != null) actionButton.Interactable = false;
                     HideChanceDisplay();
+                    penaltyPreview?.Hide();
 
                     // 5. Рассчитать nature ПЕРЕД удалением слов
                     bool isPositive = ev.RollOutcome(wordInventory, gameState.rng);

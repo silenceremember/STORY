@@ -5,15 +5,17 @@ using Story.Data;
 namespace Story.UI
 {
     /// <summary>
-    /// Показывает 3 числа (HP / POW / SAN) разбитого penalty.
-    /// Анимирует переход от текущего значения к новому (cancel-safe).
-    /// Цвета и длительность задаются через PenaltyPreviewStyleSO.
+    /// Единый блок «шанс + штраф».
+    /// Показывается и скрывается одним вызовом; шанс и penalty всегда идут вместе.
     /// </summary>
     public class PenaltyPreviewView : MonoBehaviour
     {
         [SerializeField] private PenaltyPreviewStyleSO style;
 
-        [Header("UI References")]
+        [Header("Chance")]
+        [SerializeField] private TMP_Text chanceText;
+
+        [Header("Penalty (HP / POW / SAN)")]
         [SerializeField] private TMP_Text hpText;
         [SerializeField] private TMP_Text powText;
         [SerializeField] private TMP_Text sanText;
@@ -29,16 +31,46 @@ namespace Story.UI
 
         private float AnimDuration => style != null ? style.animDuration : 0.4f;
 
-        /// <summary>Show and animate from 0 → targets.</summary>
-        public void ShowFrom(int dHp, int dPow, int dSan)
+        // ── Public API ────────────────────────────────────────────────────
+
+        /// <summary>Показать блок и анимировать penalty 0 → targets. Шанс устанавливается сразу.</summary>
+        public void Show(float chance, int dHp, int dPow, int dSan)
         {
             gameObject.SetActive(true);
+            SetChance(chance);
             _dispHp = 0; _dispPow = 0; _dispSan = 0;
-            SetTargets(dHp, dPow, dSan);
+            AnimateTo(dHp, dPow, dSan);
         }
 
-        /// <summary>Animate from current displayed values to new targets.</summary>
-        public void SetTargets(int dHp, int dPow, int dSan)
+        /// <summary>Обновить шанс (текст, цвет).</summary>
+        public void UpdateChance(float chance) => SetChance(chance);
+
+        /// <summary>Обновить шанс с rich-text (для hover-preview).</summary>
+        public void UpdateChance(string richText)
+        {
+            if (chanceText == null) return;
+            chanceText.text = richText;
+        }
+
+        /// <summary>Обновить penalty (анимированно от текущего к новому).</summary>
+        public void UpdatePenalty(int dHp, int dPow, int dSan) => AnimateTo(dHp, dPow, dSan);
+
+        /// <summary>Скрыть весь блок.</summary>
+        public void Hide()
+        {
+            _animating = false;
+            gameObject.SetActive(false);
+        }
+
+        // ── Internal ──────────────────────────────────────────────────────
+
+        private void SetChance(float chance)
+        {
+            if (chanceText == null) return;
+            chanceText.text = $"{Mathf.RoundToInt(chance * 100)}%";
+        }
+
+        private void AnimateTo(int dHp, int dPow, int dSan)
         {
             _targetHp  = dHp;
             _targetPow = dPow;
@@ -50,23 +82,6 @@ namespace Story.UI
 
             _animTimer = 0f;
             _animating = true;
-        }
-
-        /// <summary>Snap to values without animation.</summary>
-        public void SetImmediate(int dHp, int dPow, int dSan)
-        {
-            gameObject.SetActive(true);
-            _targetHp  = dHp;  _dispHp  = dHp;
-            _targetPow = dPow; _dispPow = dPow;
-            _targetSan = dSan; _dispSan = dSan;
-            _animating = false;
-            Render();
-        }
-
-        public void Hide()
-        {
-            _animating = false;
-            gameObject.SetActive(false);
         }
 
         private void Update()
@@ -105,11 +120,7 @@ namespace Story.UI
                  : style.neutralColor)
                 : Color.white;
 
-            if (rounded > 0)
-                txt.text = $"+{rounded}";
-            else
-                txt.text = rounded.ToString();
-
+            txt.text  = rounded > 0 ? $"+{rounded}" : rounded.ToString();
             txt.color = c;
         }
     }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using TMPro;
 using UnityEngine;
 using Story.Data;
 using Story.Core;
@@ -43,9 +42,8 @@ namespace Story
         [SerializeField] private GameObject       actionPanel;
         [SerializeField] private TextButton       actionButton;
 
-        [Header("Отображение шанса и штрафа")]
-        [SerializeField] private TMP_Text chanceText;
-        [SerializeField] private PenaltyPreviewView penaltyPreview;
+        [Header("Шанс + Штраф (единый блок)")]
+        [SerializeField] private PenaltyPreviewView actionStats;
 
         [Header("Outcome Word System")]
         [SerializeField] private OutcomeWordClickHandler outcomeWordClickHandler;
@@ -59,6 +57,8 @@ namespace Story
         private CancellationTokenSource       _gameCts;
         private readonly List<WordSO>         _pickedWords = new();
         private EventSO                       _currentLoopEvent;
+        /// <summary>True пока блок шанса/штрафа разрешён к показу (после печати action).</summary>
+        private bool                          _statsVisible;
 
         // ── Unity lifecycle ───────────────────────────────────────────────
         private void Awake()
@@ -92,6 +92,7 @@ namespace Story
             gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.day, gameState.flags, gameState.rng);
 
             actionPanel?.SetActive(false);
+            HideStats();
             mainTypewriter?.Clear();
             dayTypewriter?.Clear();
             seedTypewriter?.Clear();
@@ -121,24 +122,43 @@ namespace Story
                 StartGame();
         }
 
+        // ── Helpers: показ/скрытие единого блока ──────────────────────────
+
+        /// <summary>Разрешает обновления из инвентаря и показывает блок с анимацией.</summary>
+        private void ShowStats(float chance, EventSO ev)
+        {
+            _statsVisible = true;
+            if (actionStats == null) return;
+            ev.CalcDeltas(wordInventory, out int dHp, out int dPow, out int dSan);
+            actionStats.Show(chance, dHp, dPow, dSan);
+        }
+
+        /// <summary>Скрывает блок и запрещает обновления из инвентаря/hover.</summary>
+        private void HideStats()
+        {
+            _statsVisible = false;
+            actionStats?.Hide();
+        }
+
         // ── Обновление фразы на кнопке при изменении инвентаря ────────────
 
         private void OnInventoryChangedUpdatePhrase()
         {
             if (_currentLoopEvent == null) return;
             if (eventWordHighlightView != null && eventWordHighlightView.IsOutcomePhase) return;
-            SetActionButtonText(_currentLoopEvent.BuildPhrase(wordInventory));
-            UpdateChanceDisplay(_currentLoopEvent.CalcChance(wordInventory));
 
-            // Update penalty preview
-            if (penaltyPreview != null)
-            {
-                _currentLoopEvent.CalcDeltas(wordInventory, out int dHp, out int dPow, out int dSan);
-                penaltyPreview.SetTargets(dHp, dPow, dSan);
-            }
+            SetActionButtonText(_currentLoopEvent.BuildPhrase(wordInventory));
+
+            if (!_statsVisible || actionStats == null) return;
+
+            float chance = _currentLoopEvent.CalcChance(wordInventory);
+            actionStats.UpdateChance(chance);
+
+            _currentLoopEvent.CalcDeltas(wordInventory, out int dHp, out int dPow, out int dSan);
+            actionStats.UpdatePenalty(dHp, dPow, dSan);
         }
 
-        /// <summary>При наведении на слово в инвентаре — превью фразы + шанса на кнопке.</summary>
+        /// <summary>При наведении на слово в инвентаре — превью фразы + шанса + штрафа.</summary>
         private void OnHoverUpdatePhrase(WordSO hoveredWord)
         {
             if (_currentLoopEvent == null) return;
@@ -187,43 +207,30 @@ namespace Story
                 nounKey  = hoveredWord.key;
             }
 
-            // Строим фразу + превью шанса
-            string phrase = $"{verbPart} {nounPart}";
+            SetActionButtonText($"{verbPart} {nounPart}");
+
+            if (!_statsVisible || actionStats == null) return;
+
+            // Шанс с цветовым превью
             float currentChance = ev.CalcChance(wordInventory);
             float previewChance = ev.CalcChanceForKeys(verbKey, nounKey);
-            int pctNew = Mathf.RoundToInt(previewChance * 100);
+            int   pctNew        = Mathf.RoundToInt(previewChance * 100);
 
-            SetActionButtonText(phrase);
-
-            string chanceColor;
             if (previewChance > currentChance)
-                chanceColor = "#4CAF50";
+                actionStats.UpdateChance($"<color=#4CAF50>{pctNew}%</color>");
             else if (previewChance < currentChance)
-                chanceColor = "#F44336";
+                actionStats.UpdateChance($"<color=#F44336>{pctNew}%</color>");
             else
-                chanceColor = "";
+                actionStats.UpdateChance(previewChance);
 
-            if (!string.IsNullOrEmpty(chanceColor))
-                UpdateChanceDisplay($"<color={chanceColor}>{pctNew}%</color>");
-            else
-                UpdateChanceDisplay(previewChance);
+            // Штраф с hover-превью
+            WordSO previewVerb = wordInventory?.GetActive(WordType.Verb);
+            WordSO previewNoun = wordInventory?.GetActive(WordType.Noun);
+            if (hoveredWord.type == WordType.Verb) previewVerb = hoveredWord;
+            if (hoveredWord.type == WordType.Noun) previewNoun = hoveredWord;
 
-            // Penalty preview for hovered word
-            if (penaltyPreview != null)
-            {
-                WordSO previewVerb = null;
-                WordSO previewNoun = null;
-                if (wordInventory != null)
-                {
-                    previewVerb = wordInventory.GetActive(WordType.Verb);
-                    previewNoun = wordInventory.GetActive(WordType.Noun);
-                }
-                if (hoveredWord.type == WordType.Verb)  previewVerb = hoveredWord;
-                if (hoveredWord.type == WordType.Noun)  previewNoun = hoveredWord;
-
-                ev.CalcDeltasForHover(previewVerb, previewNoun, out int dHp, out int dPow, out int dSan);
-                penaltyPreview.SetTargets(dHp, dPow, dSan);
-            }
+            ev.CalcDeltasForHover(previewVerb, previewNoun, out int dHp, out int dPow, out int dSan);
+            actionStats.UpdatePenalty(dHp, dPow, dSan);
         }
 
         private void SetActionButtonText(string phrase)
@@ -235,26 +242,6 @@ namespace Story
                 tmp.text = phrase.ToUpperInvariant();
                 tmp.maxVisibleCharacters = int.MaxValue;
             }
-        }
-
-        private void UpdateChanceDisplay(float chance)
-        {
-            if (chanceText == null) return;
-            int pct = Mathf.RoundToInt(chance * 100);
-            chanceText.text = $"{pct}%";
-            chanceText.gameObject.SetActive(true);
-        }
-
-        private void UpdateChanceDisplay(string richText)
-        {
-            if (chanceText == null) return;
-            chanceText.text = richText;
-            chanceText.gameObject.SetActive(true);
-        }
-
-        private void HideChanceDisplay()
-        {
-            if (chanceText != null) chanceText.gameObject.SetActive(false);
         }
 
         // ── Game Loop ─────────────────────────────────────────────────────
@@ -281,37 +268,31 @@ namespace Story
                             cancellationToken: ct);
                     }
 
-                    // 2. Показать event-текст (статичный)
+                    // 2. Показать event-текст
                     wordInventory?.ClearActive();
                     eventWordHighlightView?.SetEventPhase(ev, wordInventory);
-
                     await mainTypewriter.PlayAsync(ev.eventText, ct);
 
-                    // 3. Кнопка с составной фразой
-                    string defaultPhrase = ev.BuildPhrase(null);
-                    float defaultChance = ev.CalcChance(null);
+                    // 3. Кнопка с составной фразой — шанс/штраф скрыты до конца печати
+                    string defaultPhrase  = ev.BuildPhrase(null);
+                    float  defaultChance  = ev.CalcChance(null);
                     actionPanel?.SetActive(true);
-                    UpdateChanceDisplay(defaultChance);
-
-                    // Show penalty preview: animate from 0 to default deltas
-                    if (penaltyPreview != null)
-                    {
-                        ev.CalcDeltas(null, out int dHp, out int dPow, out int dSan);
-                        penaltyPreview.ShowFrom(dHp, dPow, dSan);
-                    }
+                    HideStats();
 
                     if (actionButton != null) actionButton.Interactable = false;
                     if (actionTypewriter != null)
                         await actionTypewriter.PlayAsync(defaultPhrase, ct);
                     if (actionButton != null) actionButton.Interactable = true;
 
-                    // 4. Ждать нажатия кнопки (фраза обновляется live через OnInventoryChanged)
+                    // Фраза напечатана — показываем блок шанса + штрафа
+                    ShowStats(defaultChance, ev);
+
+                    // 4. Ждать нажатия кнопки (фраза + шанс + штраф обновляются live)
                     _actionTcs = new UniTaskCompletionSource<bool>();
                     await _actionTcs.Task.AttachExternalCancellation(ct);
 
                     if (actionButton != null) actionButton.Interactable = false;
-                    HideChanceDisplay();
-                    penaltyPreview?.Hide();
+                    HideStats();
 
                     // 5. Рассчитать nature ПЕРЕД удалением слов
                     bool isPositive = ev.RollOutcome(wordInventory, gameState.rng);
@@ -335,10 +316,9 @@ namespace Story
                     await UniTask.WhenAll(eraseMain, eraseAction);
                     actionPanel?.SetActive(false);
 
-                    // 8. Показать outcome (зависит от nature)
+                    // 8. Показать outcome
                     _currentLoopEvent = null;
 
-                    // Устанавливаем флаг из события
                     if (isPositive)
                         gameState.SetFlag(ev.setsFlagOnPositive);
                     else
@@ -350,16 +330,10 @@ namespace Story
                     {
                         if (isPositive)
                         {
-                            // Positive: кликабельные слова-награды
                             _pickedWords.Clear();
                             string processed = OutcomeParser.PreProcess(
-                                outcomeRaw,
-                                ev.rewardWordPool,
-                                gameState.rng,
-                                _pickedWords);
-
-                            string richText = OutcomeParser.Parse(
-                                processed, wordDatabase, wordInventory);
+                                outcomeRaw, ev.rewardWordPool, gameState.rng, _pickedWords);
+                            string richText = OutcomeParser.Parse(processed, wordDatabase, wordInventory);
 
                             outcomeWordClickHandler?.Activate(processed);
                             eventWordHighlightView?.SetOutcomePhase(richText);
@@ -367,7 +341,6 @@ namespace Story
                         }
                         else
                         {
-                            // Negative: обычный текст без наград
                             eventWordHighlightView?.SetOutcomePhase(outcomeRaw);
                             await mainTypewriter.PlayAsync(outcomeRaw, ct);
                         }
@@ -389,7 +362,7 @@ namespace Story
                         await mainTypewriter.EraseCurrentAsync(ct);
                     }
 
-                    // 8. Game Over?
+                    // 9. Game Over?
                     if (gameOver)
                     {
                         await mainTypewriter.PlayAsync(gameState.gameOverReason, ct);
@@ -401,7 +374,7 @@ namespace Story
                         return;
                     }
 
-                    // 9. Следующий день
+                    // 10. Следующий день
                     gameState.day++;
                     gameState.currentEvent = EventSelector.Pick(eventDatabase, gameState.day, gameState.flags, gameState.rng);
                     dayTypewriter?.Clear();

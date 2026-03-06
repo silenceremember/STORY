@@ -1237,7 +1237,6 @@ RectTransform:
   - {fileID: 849655771}
   - {fileID: 2008279135}
   - {fileID: 755355814}
-  - {fileID: 1028126429}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2464,12 +2463,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 580362946}
+  m_Father: {fileID: 1104090126}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -515}
-  m_SizeDelta: {x: 0, y: -1030}
+  m_AnchoredPosition: {x: 0, y: -880}
+  m_SizeDelta: {x: 1290.0001, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1028126430
 MonoBehaviour:
@@ -2753,6 +2752,7 @@ RectTransform:
   - {fileID: 1078479769}
   - {fileID: 1296487249}
   - {fileID: 1005200732}
+  - {fileID: 1028126429}
   m_Father: {fileID: 580362946}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2773,6 +2773,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Story.UI.PenaltyPreviewView
   style: {fileID: 11400000, guid: 53b9cd6a25534724c89899b5f2deabb8, type: 2}
+  chanceText: {fileID: 1028126431}
   hpText: {fileID: 1078479770}
   powText: {fileID: 1296487250}
   sanText: {fileID: 1005200733}
@@ -4268,8 +4269,7 @@ MonoBehaviour:
   actionTypewriter: {fileID: 755355816}
   actionPanel: {fileID: 755355813}
   actionButton: {fileID: 755355815}
-  chanceText: {fileID: 1028126431}
-  penaltyPreview: {fileID: 1104090127}
+  actionStats: {fileID: 1104090127}
   outcomeWordClickHandler: {fileID: 1564665614}
   eventWordHighlightView: {fileID: 1564665615}
 --- !u!4 &1794463954

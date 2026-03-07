@@ -7,7 +7,7 @@ namespace Story.Editor
 {
     /// <summary>
     /// Tools → Story → Generate Word Assets
-    /// 10 verb + 10 noun с данными для Intent+Action + Nature системы.
+    /// 6 подходов (approach) + 6 опор (support) для системы Подход+Опора.
     /// </summary>
     public static class WordAssetGenerator
     {
@@ -16,12 +16,12 @@ namespace Story.Editor
             public string key;
             public string display;
             public WordType type;
-            // Intent (verb)
-            public string phraseStart;
-            public string phrasePast;   // 2-е лицо наст. вр. ("швыряешь")
+            // Approach
+            public string approachAdverb;
+            public string approachAdverbPast;
             public float hpW, powW, sanW;
-            // Action (noun)
-            public string phraseEnd;
+            // Support
+            public string supportAdverb;
             public int reduction;
             // Sentiment
             public float nature;
@@ -29,71 +29,53 @@ namespace Story.Editor
 
         private static readonly WordData[] Words = new[]
         {
-            // ── Глаголы (Intent) ─────────────────────────────────────────
-            // phraseStart = инфинитив, phrasePast = 2-е лицо наст. вр.
-            // nature: > 0 дружелюбно, < 0 агрессивно
-            new WordData { key="hurl",      display="Швырнуть",   type=WordType.Verb,
-                phraseStart="Швырнуть",   phrasePast="швыряешь",      hpW=3f, powW=1f, sanW=0f, nature=-0.4f },
+            // ── Подходы (Approach) ────────────────────────────────────────
+            // approachAdverb = наречие на кнопке, approachAdverbPast = для outcome
+            // hpW/powW/sanW = куда идёт штраф
+            new WordData { key="careful",    display="Осторожно",  type=WordType.Approach,
+                approachAdverb="осторожно",  approachAdverbPast="осторожно",
+                hpW=1f, powW=0f, sanW=2f, nature= 0.2f },
 
-            new WordData { key="throw",     display="Метнуть",    type=WordType.Verb,
-                phraseStart="Метнуть",    phrasePast="метаешь",       hpW=2f, powW=2f, sanW=0f, nature=-0.5f },
+            new WordData { key="forceful",   display="Напролом",   type=WordType.Approach,
+                approachAdverb="напролом",   approachAdverbPast="напролом",
+                hpW=3f, powW=2f, sanW=0f, nature=-0.3f },
 
-            new WordData { key="give",      display="Подарить",   type=WordType.Verb,
-                phraseStart="Подарить",   phrasePast="даришь",        hpW=0f, powW=1f, sanW=0f, nature= 0.8f },
+            new WordData { key="secret",     display="Тайно",      type=WordType.Approach,
+                approachAdverb="тайно",      approachAdverbPast="тайно",
+                hpW=0f, powW=1f, sanW=2f, nature= 0.1f },
 
-            new WordData { key="show",      display="Показать",   type=WordType.Verb,
-                phraseStart="Показать",   phrasePast="показываешь",   hpW=0f, powW=0f, sanW=1f, nature= 0.3f },
+            new WordData { key="open",       display="Открыто",    type=WordType.Approach,
+                approachAdverb="открыто",    approachAdverbPast="открыто",
+                hpW=1f, powW=1f, sanW=1f, nature= 0.4f },
 
-            new WordData { key="use",       display="Применить",  type=WordType.Verb,
-                phraseStart="Применить",  phrasePast="применяешь",    hpW=1f, powW=1f, sanW=1f, nature= 0.5f },
+            new WordData { key="patient",    display="Терпеливо",  type=WordType.Approach,
+                approachAdverb="терпеливо",  approachAdverbPast="терпеливо",
+                hpW=0f, powW=0f, sanW=3f, nature= 0.5f },
 
-            new WordData { key="hide",      display="Спрятать",   type=WordType.Verb,
-                phraseStart="Спрятать",   phrasePast="прячешь",       hpW=0f, powW=1f, sanW=2f, nature= 0.1f },
+            new WordData { key="desperate",  display="Отчаянно",   type=WordType.Approach,
+                approachAdverb="отчаянно",   approachAdverbPast="отчаянно",
+                hpW=3f, powW=3f, sanW=1f, nature=-0.5f },
 
-            new WordData { key="toss",      display="Бросить",    type=WordType.Verb,
-                phraseStart="Бросить",    phrasePast="бросаешь",      hpW=1f, powW=2f, sanW=1f, nature=-0.3f },
+            // ── Опоры (Support) ───────────────────────────────────────────
+            // supportAdverb = наречие на кнопке и в outcome
+            // reduction = уменьшение штрафа
+            new WordData { key="strength",   display="Силой",      type=WordType.Support,
+                supportAdverb="силой",      reduction=3, nature=-0.2f },
 
-            new WordData { key="offer",     display="Предложить", type=WordType.Verb,
-                phraseStart="Предложить", phrasePast="предлагаешь",   hpW=0f, powW=0f, sanW=1f, nature= 0.7f },
+            new WordData { key="cunning",    display="Хитростью",  type=WordType.Support,
+                supportAdverb="хитростью",  reduction=4, nature= 0.1f },
 
-            new WordData { key="grab",      display="Выхватить",  type=WordType.Verb,
-                phraseStart="Выхватить",  phrasePast="выхватываешь",  hpW=2f, powW=2f, sanW=0f, nature=-0.3f },
+            new WordData { key="gold",       display="Золотом",    type=WordType.Support,
+                supportAdverb="золотом",    reduction=6, nature= 0.3f },
 
-            new WordData { key="raise",     display="Поднять",    type=WordType.Verb,
-                phraseStart="Поднять",    phrasePast="поднимаешь",    hpW=1f, powW=1f, sanW=1f, nature= 0.0f },
+            new WordData { key="word",       display="Словом",     type=WordType.Support,
+                supportAdverb="словом",     reduction=4, nature= 0.7f },
 
-            // ── Существительные (Action) ─────────────────────────────────
-            // phraseEnd = объект в вин. падеже + контекст
-            // nature: > 0 мирное/полезное, < 0 агрессивное/опасное
-            new WordData { key="sword",     display="Меч",        type=WordType.Noun,
-                phraseEnd="верный клинок",           reduction=5, nature=-0.5f },
+            new WordData { key="knowledge",  display="Знанием",    type=WordType.Support,
+                supportAdverb="знанием",    reduction=5, nature= 0.5f },
 
-            new WordData { key="shield",    display="Щит",        type=WordType.Noun,
-                phraseEnd="крепкий щит",             reduction=4, nature= 0.2f },
-
-            new WordData { key="torch",     display="Факел",      type=WordType.Noun,
-                phraseEnd="горящий факел",           reduction=3, nature= 0.1f },
-
-            new WordData { key="medicine",  display="Лекарство",  type=WordType.Noun,
-                phraseEnd="целебное зелье",          reduction=6, nature= 0.9f },
-
-            new WordData { key="map",       display="Карта",      type=WordType.Noun,
-                phraseEnd="старую карту",            reduction=4, nature= 0.3f },
-
-            new WordData { key="rations",   display="Провиант",   type=WordType.Noun,
-                phraseEnd="горсть провианта",        reduction=3, nature= 0.7f },
-
-            new WordData { key="amulet",    display="Амулет",     type=WordType.Noun,
-                phraseEnd="древний амулет",          reduction=4, nature= 0.4f },
-
-            new WordData { key="poison",    display="Яд",         type=WordType.Noun,
-                phraseEnd="склянку с ядом",          reduction=5, nature=-0.7f },
-
-            new WordData { key="book",      display="Книга",      type=WordType.Noun,
-                phraseEnd="старинный фолиант",       reduction=3, nature= 0.3f },
-
-            new WordData { key="dagger",    display="Кинжал",     type=WordType.Noun,
-                phraseEnd="острый кинжал",           reduction=5, nature=-0.7f },
+            new WordData { key="luck",       display="Удачей",     type=WordType.Support,
+                supportAdverb="удачей",     reduction=2, nature= 0.0f },
         };
 
         // ── Меню ────────────────────────────────────────────────────────────
@@ -123,15 +105,15 @@ namespace Story.Editor
                 so.displayText = data.display;
                 so.type        = data.type;
 
-                // Intent (verb)
-                so.phraseStart = data.phraseStart ?? "";
-                so.phrasePast  = data.phrasePast ?? "";
-                so.hpWeight    = data.hpW;
-                so.powWeight   = data.powW;
-                so.sanWeight   = data.sanW;
+                // Approach
+                so.approachAdverb     = data.approachAdverb ?? "";
+                so.approachAdverbPast = data.approachAdverbPast ?? "";
+                so.hpWeight           = data.hpW;
+                so.powWeight          = data.powW;
+                so.sanWeight          = data.sanW;
 
-                // Action (noun)
-                so.phraseEnd        = data.phraseEnd ?? "";
+                // Support
+                so.supportAdverb    = data.supportAdverb ?? "";
                 so.penaltyReduction = data.reduction;
 
                 // Nature
@@ -149,7 +131,7 @@ namespace Story.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"[WordAssetGenerator] Создано/обновлено {Words.Length} слов в {folder}");
+            Debug.Log($"[WordAssetGenerator] Создано/обновлено {Words.Length} карточек в {folder}");
         }
 
         private static void CreateFolder(string path)

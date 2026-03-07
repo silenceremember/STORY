@@ -10,6 +10,7 @@ namespace Story.Editor
     /// <summary>
     /// Tools → Story → Generate Event Assets
     /// ~20 событий для 10-дневной кампании с цепочками (flags).
+    /// Фраза на кнопке: "{actionVerb} {approach} {support}"
     /// </summary>
     public static class EventAssetGenerator
     {
@@ -18,10 +19,14 @@ namespace Story.Editor
             public string key;
             public string eventText;
             public int    penalty;
-            public string defStart;
-            public string defPhrasePast;
+            // Глагол события (контекст)
+            public string actionVerb;
+            public string actionVerbPast;
+            // Дефолтные подход и опора
+            public string defApproach;
+            public string defApproachPast;
             public float  defHp, defPow, defSan;
-            public string defEnd;
+            public string defSupport;
             public int    defReduction;
             // Outcome
             public float  baseChance;
@@ -43,8 +48,8 @@ namespace Story.Editor
         }
 
         private static readonly string[] AllWordKeys = {
-            "hurl","throw","give","show","use","hide","toss","offer","grab","raise",
-            "sword","shield","torch","medicine","map","rations","amulet","poison","book","dagger"
+            "careful","forceful","secret","open","patient","desperate",
+            "strength","cunning","gold","word","knowledge","luck"
         };
 
         // ═════════════════════════════════════════════════════════════════
@@ -59,14 +64,15 @@ namespace Story.Editor
                 key       = "Day1_Shop",
                 eventText = "Перед выходом ты заглядываешь в лавку. Старик раскладывает товары на прилавке и щурится: «Бери, путник, дорога длинная.»",
                 penalty   = -8,
-                defStart  = "Показать", defPhrasePast = "показываешь",
+                actionVerb = "Говорить", actionVerbPast = "говоришь",
+                defApproach = "открыто", defApproachPast = "открыто",
                 defHp = 1, defPow = 1, defSan = 0,
-                defEnd    = "монеты", defReduction = 3,
-                favorableKeys = new[] { "show", "use", "grab", "offer", "give", "raise" },
-                positiveOutcome = "и старик кивает: «Бери, это тебе пригодится». Ты находишь [noun] и [noun].",
+                defSupport = "словом", defReduction = 3,
+                favorableKeys = new[] { "open", "patient", "word", "knowledge" },
+                positiveOutcome = "и старик кивает: «Бери, это тебе пригодится». Ты находишь [support] и [support].",
                 negativeOutcome = "но старик ворчит и прячет лучшее. Ты берёшь, что осталось.",
-                rewardKeys = new[] { "sword", "shield", "torch" },
-                poolKeys   = new[] { "sword", "shield", "torch", "grab", "use", "show", "offer" },
+                rewardKeys = new[] { "strength", "cunning", "word" },
+                poolKeys   = new[] { "strength", "cunning", "word", "open", "patient" },
                 weight    = 1f,
                 dayMin = 1, dayMax = 1, isMandatory = false,
                 baseChance = 1f, favorableBonus = 0f,
@@ -76,14 +82,15 @@ namespace Story.Editor
                 key       = "Day1_Caravan",
                 eventText = "У ворот стоит обоз. Торговец нагружает повозку и зовёт: «Помоги — поделюсь, чем смогу.»",
                 penalty   = -8,
-                defStart  = "Предложить", defPhrasePast = "предлагаешь",
+                actionVerb = "Помочь", actionVerbPast = "помогаешь",
+                defApproach = "открыто", defApproachPast = "открыто",
                 defHp = 1, defPow = 0, defSan = 1,
-                defEnd    = "помощь", defReduction = 3,
-                favorableKeys = new[] { "grab", "use", "give", "offer", "show", "raise" },
-                positiveOutcome = "и торговец протягивает мешок: «Держи, пригодится в пути». Ты находишь [noun] и [noun].",
+                defSupport = "силой", defReduction = 3,
+                favorableKeys = new[] { "forceful", "open", "strength", "word" },
+                positiveOutcome = "и торговец протягивает мешок: «Держи, пригодится в пути». Ты находишь [support] и [support].",
                 negativeOutcome = "но торговец лишь качает головой. Повозка уезжает без тебя.",
-                rewardKeys = new[] { "torch", "rations", "map" },
-                poolKeys   = new[] { "torch", "rations", "map", "give", "grab", "offer", "show" },
+                rewardKeys = new[] { "knowledge", "cunning", "luck" },
+                poolKeys   = new[] { "knowledge", "cunning", "luck", "open", "forceful" },
                 weight    = 1f,
                 dayMin = 1, dayMax = 1, isMandatory = false,
                 baseChance = 1f, favorableBonus = 0f,
@@ -96,14 +103,15 @@ namespace Story.Editor
                 key       = "Day2_Fork",
                 eventText = "Тропа раздваивается. Левая ведёт в чащу — тёмную и тихую. Правая — по открытому тракту, где видны следы колёс.",
                 penalty   = -12,
-                defStart  = "Применить", defPhrasePast = "применяешь",
+                actionVerb = "Выбрать", actionVerbPast = "выбираешь",
+                defApproach = "осторожно", defApproachPast = "осторожно",
                 defHp = 1, defPow = 1, defSan = 1,
-                defEnd    = "чутьё", defReduction = 0,
-                favorableKeys = new[] { "map", "torch", "show", "use", "raise", "grab" },
-                positiveOutcome = "и ты замечаешь старую карту на камне. Находишь [noun] и [noun].",
+                defSupport = "знанием", defReduction = 0,
+                favorableKeys = new[] { "careful", "secret", "knowledge", "cunning" },
+                positiveOutcome = "и ты замечаешь старый знак на камне. Находишь [support] и [support].",
                 negativeOutcome = "но оба пути выглядят опасно. Ты идёшь по тракту наугад.",
-                rewardKeys = new[] { "map", "torch" },
-                poolKeys   = new[] { "map", "torch", "show", "use" },
+                rewardKeys = new[] { "knowledge", "cunning" },
+                poolKeys   = new[] { "knowledge", "cunning", "careful", "secret" },
                 weight    = 1f,
                 dayMin = 2, dayMax = 2, isMandatory = true,
                 baseChance = 0.25f, favorableBonus = 0.3f,
@@ -117,14 +125,15 @@ namespace Story.Editor
                 key       = "Day3_Spirits",
                 eventText = "Лесные духи танцуют в лунном свете. Они шепчут: «Путник, принеси дар — и мы откроем путь.»",
                 penalty   = -16,
-                defStart  = "Показать", defPhrasePast = "показываешь",
+                actionVerb = "Обратиться", actionVerbPast = "обращаешься",
+                defApproach = "терпеливо", defApproachPast = "терпеливо",
                 defHp = 0, defPow = 1, defSan = 3,
-                defEnd    = "дары", defReduction = 0,
-                favorableKeys = new[] { "amulet", "book", "torch", "show", "offer", "give", "raise" },
-                positiveOutcome = "и духи оставляют подарок у корней древа. Ты находишь [noun] и [verb].",
+                defSupport = "словом", defReduction = 0,
+                favorableKeys = new[] { "patient", "open", "word", "gold", "knowledge" },
+                positiveOutcome = "и духи оставляют подарок у корней древа. Ты находишь [support] и [approach].",
                 negativeOutcome = "но духи разъярены. Лес замолкает, и ты бредёшь наугад.",
-                rewardKeys = new[] { "amulet", "book", "offer" },
-                poolKeys   = new[] { "amulet", "book", "torch", "offer" },
+                rewardKeys = new[] { "cunning", "knowledge", "patient" },
+                poolKeys   = new[] { "cunning", "knowledge", "word", "patient" },
                 weight    = 1f,
                 dayMin = 3, dayMax = 3, isMandatory = true,
                 baseChance = 0.25f, favorableBonus = 0.3f,
@@ -137,14 +146,15 @@ namespace Story.Editor
                 key       = "Day3_Ambush",
                 eventText = "Засада! Разбойники выскакивают из придорожных кустов. Главарь ухмыляется, поигрывая ножом.",
                 penalty   = -18,
-                defStart  = "Выхватить", defPhrasePast = "выхватываешь",
+                actionVerb = "Встретить", actionVerbPast = "встречаешь",
+                defApproach = "напролом", defApproachPast = "напролом",
                 defHp = 2, defPow = 2, defSan = 0,
-                defEnd    = "оружие", defReduction = 0,
-                favorableKeys = new[] { "sword", "dagger", "shield", "hurl", "throw", "grab", "toss", "raise" },
-                positiveOutcome = "и разбойники отступают, бросив добычу. Ты находишь [noun] и [noun].",
-                negativeOutcome = "но разбойники лишь злятся. Ты еле уносишь ноги.",
-                rewardKeys = new[] { "dagger", "shield", "sword" },
-                poolKeys   = new[] { "dagger", "sword", "shield", "hurl", "throw" },
+                defSupport = "силой", defReduction = 0,
+                favorableKeys = new[] { "forceful", "desperate", "strength", "cunning" },
+                positiveOutcome = "и разбойники отступают, бросив добычу. Ты находишь [support] и [support].",
+                negativeOutcome = "но разбойники сильнее. Ты еле уносишь ноги.",
+                rewardKeys = new[] { "strength", "cunning", "luck" },
+                poolKeys   = new[] { "strength", "cunning", "luck", "forceful", "desperate" },
                 weight    = 1f,
                 dayMin = 3, dayMax = 3, isMandatory = true,
                 baseChance = 0.25f, favorableBonus = 0.3f,
@@ -158,14 +168,15 @@ namespace Story.Editor
                 key       = "Day4_Stranger",
                 eventText = "У уцелевшего моста лежит раненый. Он шепчет: «Не ходи туда... руины... ловушка...» Его рука тянется к тебе.",
                 penalty   = -15,
-                defStart  = "Предложить", defPhrasePast = "предлагаешь",
+                actionVerb = "Помочь", actionVerbPast = "помогаешь",
+                defApproach = "осторожно", defApproachPast = "осторожно",
                 defHp = 2, defPow = 1, defSan = 0,
-                defEnd    = "помощь", defReduction = 0,
-                favorableKeys = new[] { "medicine", "rations", "give", "offer", "show", "use" },
-                positiveOutcome = "и странник благодарит: «Возьми... это поможет». Он даёт тебе [noun] и [noun].",
+                defSupport = "словом", defReduction = 0,
+                favorableKeys = new[] { "open", "patient", "word", "gold", "knowledge" },
+                positiveOutcome = "и странник благодарит: «Возьми... это поможет». Он даёт тебе [support] и [support].",
                 negativeOutcome = "но странник отшатывается. Ты уходишь, не оглядываясь.",
-                rewardKeys = new[] { "medicine", "book", "rations" },
-                poolKeys   = new[] { "medicine", "rations", "book", "give", "offer" },
+                rewardKeys = new[] { "knowledge", "cunning", "word" },
+                poolKeys   = new[] { "knowledge", "cunning", "word", "open", "patient" },
                 weight    = 1f,
                 dayMin = 4, dayMax = 4, isMandatory = true,
                 baseChance = 0.2f, favorableBonus = 0.3f,
@@ -174,19 +185,19 @@ namespace Story.Editor
 
             // ── ДЕНЬ 5: РУИНЫ / БОЛОТО ────────────────────────────────
 
-            // Помог страннику → руины
             new EventData {
                 key       = "Day5_Ruins",
                 eventText = "Следуя словам странника, ты находишь древние руины. Стены покрыты письменами, а в глубине мерцает свет.",
                 penalty   = -16,
-                defStart  = "Применить", defPhrasePast = "применяешь",
+                actionVerb = "Исследовать", actionVerbPast = "исследуешь",
+                defApproach = "осторожно", defApproachPast = "осторожно",
                 defHp = 0, defPow = 1, defSan = 2,
-                defEnd    = "знания", defReduction = 0,
-                favorableKeys = new[] { "book", "map", "torch", "show", "use", "raise" },
-                positiveOutcome = "и среди камней ты находишь тайник. Внутри — [noun] и [verb].",
+                defSupport = "знанием", defReduction = 0,
+                favorableKeys = new[] { "careful", "secret", "knowledge", "cunning" },
+                positiveOutcome = "и среди камней ты находишь тайник. Внутри — [support] и [approach].",
                 negativeOutcome = "но руины содрогаются. Ты выбегаешь до обвала, потеряв время.",
-                rewardKeys = new[] { "book", "amulet", "use" },
-                poolKeys   = new[] { "book", "map", "torch", "show", "use" },
+                rewardKeys = new[] { "knowledge", "cunning", "careful" },
+                poolKeys   = new[] { "knowledge", "cunning", "careful", "secret" },
                 weight    = 1f,
                 dayMin = 5, dayMax = 5, isMandatory = true,
                 baseChance = 0.2f, favorableBonus = 0.3f,
@@ -194,19 +205,19 @@ namespace Story.Editor
                 setsFlagPos = "ruins_treasure", setsFlagNeg = "ruins_trap"
             },
 
-            // Проигнорировал странника → болото
             new EventData {
                 key       = "Day5_Swamp",
                 eventText = "Без подсказок ты забрёл в болото. Трясина чавкает под ногами, туман скрывает тропу.",
                 penalty   = -18,
-                defStart  = "Поднять", defPhrasePast = "поднимаешь",
+                actionVerb = "Пробраться", actionVerbPast = "пробираешься",
+                defApproach = "терпеливо", defApproachPast = "терпеливо",
                 defHp = 2, defPow = 1, defSan = 2,
-                defEnd    = "силы", defReduction = 0,
-                favorableKeys = new[] { "torch", "map", "use", "raise", "grab", "show" },
-                positiveOutcome = "и ты находишь твёрдую почву. На кочке лежит [noun] и [noun].",
+                defSupport = "силой", defReduction = 0,
+                favorableKeys = new[] { "patient", "careful", "strength", "cunning" },
+                positiveOutcome = "и ты находишь твёрдую почву. На кочке лежит [support] и [support].",
                 negativeOutcome = "но болото затягивает глубже. Ты выбираешься с трудом.",
-                rewardKeys = new[] { "rations", "medicine", "torch" },
-                poolKeys   = new[] { "rations", "medicine", "torch", "use", "grab" },
+                rewardKeys = new[] { "strength", "luck", "cunning" },
+                poolKeys   = new[] { "strength", "luck", "cunning", "patient" },
                 weight    = 1f,
                 dayMin = 5, dayMax = 5, isMandatory = true,
                 baseChance = 0.25f, favorableBonus = 0.3f,
@@ -220,14 +231,15 @@ namespace Story.Editor
                 key       = "Day6_Plague",
                 eventText = "Деревня охвачена мором. Старуха у колодца умоляет: «Помоги нам, путник... мы погибаем.»",
                 penalty   = -18,
-                defStart  = "Подарить", defPhrasePast = "даришь",
+                actionVerb = "Помочь", actionVerbPast = "помогаешь",
+                defApproach = "открыто", defApproachPast = "открыто",
                 defHp = 2, defPow = 1, defSan = 1,
-                defEnd    = "надежду", defReduction = 0,
-                favorableKeys = new[] { "medicine", "rations", "give", "offer", "show", "use" },
-                positiveOutcome = "и знахарка благодарит: «Ты спас нас». Она вручает [noun] и [verb].",
+                defSupport = "словом", defReduction = 0,
+                favorableKeys = new[] { "open", "patient", "word", "gold", "knowledge" },
+                positiveOutcome = "и знахарка благодарит: «Ты спас нас». Она вручает [support] и [approach].",
                 negativeOutcome = "но жители кричат тебе вслед. Мор не отступает.",
-                rewardKeys = new[] { "medicine", "rations", "give" },
-                poolKeys   = new[] { "medicine", "rations", "book", "give", "offer" },
+                rewardKeys = new[] { "knowledge", "word", "patient" },
+                poolKeys   = new[] { "knowledge", "word", "gold", "patient", "open" },
                 weight    = 1f,
                 dayMin = 6, dayMax = 6, isMandatory = true,
                 baseChance = 0.2f, favorableBonus = 0.3f,
@@ -236,19 +248,19 @@ namespace Story.Editor
 
             // ── ДЕНЬ 7: МОСТ / УЩЕЛЬЕ ────────────────────────────────
 
-            // Помог деревне → мост тролля
             new EventData {
                 key       = "Day7_Troll",
                 eventText = "Тролль под мостом требует плату. Но сельчане предупредили: «Тролль глуп — его можно обмануть.»",
                 penalty   = -20,
-                defStart  = "Бросить", defPhrasePast = "бросаешь",
+                actionVerb = "Пройти", actionVerbPast = "проходишь",
+                defApproach = "хитро", defApproachPast = "хитро",
                 defHp = 1, defPow = 2, defSan = 1,
-                defEnd    = "подачку", defReduction = 0,
-                favorableKeys = new[] { "rations", "amulet", "give", "offer", "toss", "show", "throw", "hurl" },
-                positiveOutcome = "и тролль хохочет, швыряя тебе [noun] и [noun]. Мост свободен.",
+                defSupport = "хитростью", defReduction = 0,
+                favorableKeys = new[] { "secret", "cunning", "gold", "luck" },
+                positiveOutcome = "и тролль хохочет, швыряя тебе [support] и [support]. Мост свободен.",
                 negativeOutcome = "но тролль рычит и замахивается. Ты перебегаешь мост бегом.",
-                rewardKeys = new[] { "shield", "sword", "rations" },
-                poolKeys   = new[] { "shield", "sword", "rations", "toss", "show" },
+                rewardKeys = new[] { "cunning", "luck", "gold" },
+                poolKeys   = new[] { "cunning", "luck", "gold", "secret" },
                 weight    = 1f,
                 dayMin = 7, dayMax = 7, isMandatory = true,
                 baseChance = 0.2f, favorableBonus = 0.3f,
@@ -256,19 +268,19 @@ namespace Story.Editor
                 setsFlagPos = "troll_paid", setsFlagNeg = "troll_fight"
             },
 
-            // Не помог деревне → засада мародёров
             new EventData {
                 key       = "Day7_Gorge",
                 eventText = "В узком ущелье тебя поджидают мародёры. Они знали, что ты пройдёшь здесь — кто-то донёс.",
                 penalty   = -22,
-                defStart  = "Швырнуть", defPhrasePast = "швыряешь",
+                actionVerb = "Прорваться", actionVerbPast = "прорываешься",
+                defApproach = "отчаянно", defApproachPast = "отчаянно",
                 defHp = 2, defPow = 2, defSan = 1,
-                defEnd    = "камень", defReduction = 0,
-                favorableKeys = new[] { "sword", "dagger", "shield", "hurl", "throw", "grab", "toss", "raise" },
-                positiveOutcome = "и мародёры бегут, бросив награбленное. Среди вещей — [noun] и [noun].",
+                defSupport = "силой", defReduction = 0,
+                favorableKeys = new[] { "forceful", "desperate", "strength", "luck" },
+                positiveOutcome = "и мародёры бегут, бросив награбленное. Среди вещей — [support] и [support].",
                 negativeOutcome = "но мародёры сильнее. Ты вырываешься с потерями.",
-                rewardKeys = new[] { "dagger", "poison", "sword" },
-                poolKeys   = new[] { "dagger", "poison", "sword", "hurl", "throw" },
+                rewardKeys = new[] { "strength", "luck", "cunning" },
+                poolKeys   = new[] { "strength", "luck", "cunning", "forceful", "desperate" },
                 weight    = 1f,
                 dayMin = 7, dayMax = 7, isMandatory = true,
                 baseChance = 0.2f, favorableBonus = 0.3f,
@@ -282,14 +294,15 @@ namespace Story.Editor
                 key       = "Day8_Golem",
                 eventText = "Каменный голем преграждает перевал. Его глаза пылают алым. Земля дрожит под его шагами.",
                 penalty   = -24,
-                defStart  = "Метнуть", defPhrasePast = "метаешь",
+                actionVerb = "Остановить", actionVerbPast = "останавливаешь",
+                defApproach = "напролом", defApproachPast = "напролом",
                 defHp = 2, defPow = 2, defSan = 1,
-                defEnd    = "камень", defReduction = 0,
-                favorableKeys = new[] { "sword", "dagger", "hurl", "throw", "toss", "grab", "raise", "use" },
-                positiveOutcome = "и голем рассыпается. Среди обломков — [noun] и [noun].",
+                defSupport = "силой", defReduction = 0,
+                favorableKeys = new[] { "forceful", "desperate", "strength", "cunning", "knowledge" },
+                positiveOutcome = "и голем рассыпается. Среди обломков — [support] и [support].",
                 negativeOutcome = "но голем наносит удар. Ты проскакиваешь, однако ранен.",
-                rewardKeys = new[] { "shield", "amulet", "sword" },
-                poolKeys   = new[] { "shield", "amulet", "sword", "hurl", "throw" },
+                rewardKeys = new[] { "strength", "cunning", "knowledge" },
+                poolKeys   = new[] { "strength", "cunning", "knowledge", "forceful", "desperate" },
                 weight    = 1f,
                 dayMin = 8, dayMax = 8, isMandatory = true,
                 baseChance = 0.15f, favorableBonus = 0.3f,
@@ -298,19 +311,19 @@ namespace Story.Editor
 
             // ── ДЕНЬ 9: ПОРТАЛ / ГОЛОС ────────────────────────────────
 
-            // Есть дар духов → портал
             new EventData {
                 key       = "Day9_Portal",
-                eventText = "Мерцающий портал висит в воздухе. Амулет духов пульсирует — он резонирует с порталом.",
+                eventText = "Мерцающий портал висит в воздухе. Нечто внутри резонирует с твоим прошлым.",
                 penalty   = -20,
-                defStart  = "Поднять", defPhrasePast = "поднимаешь",
+                actionVerb = "Войти", actionVerbPast = "входишь",
+                defApproach = "осторожно", defApproachPast = "осторожно",
                 defHp = 1, defPow = 1, defSan = 3,
-                defEnd    = "взгляд", defReduction = 0,
-                favorableKeys = new[] { "amulet", "book", "use", "show", "raise", "give", "offer" },
-                positiveOutcome = "и портал схлопывается, выбросив [noun] и [verb]. Амулет тускнеет.",
+                defSupport = "знанием", defReduction = 0,
+                favorableKeys = new[] { "careful", "patient", "knowledge", "word", "gold" },
+                positiveOutcome = "и портал схлопывается, выбросив [support] и [approach]. Тишина.",
                 negativeOutcome = "но портал втягивает часть твоей силы и исчезает.",
-                rewardKeys = new[] { "poison", "book", "amulet" },
-                poolKeys   = new[] { "poison", "book", "amulet", "use", "show" },
+                rewardKeys = new[] { "knowledge", "cunning", "patient" },
+                poolKeys   = new[] { "knowledge", "cunning", "patient", "careful" },
                 weight    = 1f,
                 dayMin = 9, dayMax = 9, isMandatory = true,
                 baseChance = 0.15f, favorableBonus = 0.3f,
@@ -318,19 +331,19 @@ namespace Story.Editor
                 setsFlagPos = "portal_crossed", setsFlagNeg = "portal_drained"
             },
 
-            // Нет дара духов → голос из-под земли
             new EventData {
                 key       = "Day9_Voice",
                 eventText = "Голос из-под земли обещает силу: «Дай мне что-нибудь... и я дам тебе гораздо больше.»",
                 penalty   = -20,
-                defStart  = "Показать", defPhrasePast = "показываешь",
+                actionVerb = "Ответить", actionVerbPast = "отвечаешь",
+                defApproach = "осторожно", defApproachPast = "осторожно",
                 defHp = 1, defPow = 1, defSan = 3,
-                defEnd    = "цену", defReduction = 0,
-                favorableKeys = new[] { "amulet", "book", "use", "show", "raise", "give", "offer" },
-                positiveOutcome = "и голос стихает. На земле — [noun] и [verb]. Сделка заключена.",
+                defSupport = "словом", defReduction = 0,
+                favorableKeys = new[] { "careful", "patient", "word", "knowledge", "gold" },
+                positiveOutcome = "и голос стихает. На земле — [support] и [approach]. Сделка заключена.",
                 negativeOutcome = "но голос хохочет и замолкает. Земля дрожит под ногами.",
-                rewardKeys = new[] { "poison", "amulet", "book" },
-                poolKeys   = new[] { "poison", "amulet", "book", "use", "show" },
+                rewardKeys = new[] { "cunning", "knowledge", "careful" },
+                poolKeys   = new[] { "cunning", "knowledge", "careful", "patient" },
                 weight    = 1f,
                 dayMin = 9, dayMax = 9, isMandatory = true,
                 baseChance = 0.15f, favorableBonus = 0.3f,
@@ -344,14 +357,15 @@ namespace Story.Editor
                 key       = "Day10_Final",
                 eventText = "Конец пути. Перед тобой — то, к чему ты шёл. Тени прошлого стоят за спиной. Всё, что ты сделал, привело тебя сюда.",
                 penalty   = -25,
-                defStart  = "Применить", defPhrasePast = "применяешь",
+                actionVerb = "Шагнуть", actionVerbPast = "шагаешь",
+                defApproach = "открыто", defApproachPast = "открыто",
                 defHp = 2, defPow = 2, defSan = 2,
-                defEnd    = "силу", defReduction = 0,
-                favorableKeys = new[] { "sword", "amulet", "book", "shield", "hurl", "throw", "use", "raise", "show", "grab" },
+                defSupport = "силой", defReduction = 0,
+                favorableKeys = new[] { "careful", "open", "forceful", "desperate", "strength", "knowledge", "cunning", "word", "gold", "luck" },
                 positiveOutcome = "и свет пробивается сквозь тьму. Ты выжил. Путь окончен.",
                 negativeOutcome = "но тьма поглощает тебя. Ты становишься частью дороги, которой шёл.",
                 rewardKeys = Array.Empty<string>(),
-                poolKeys   = new[] { "sword", "amulet", "book" },
+                poolKeys   = new[] { "knowledge", "cunning", "strength" },
                 weight    = 1f,
                 dayMin = 10, dayMax = 10, isMandatory = true,
                 baseChance = 0.1f, favorableBonus = 0.25f,
@@ -390,19 +404,22 @@ namespace Story.Editor
                 var existing = AssetDatabase.LoadAssetAtPath<EventSO>(path);
                 var so = existing != null ? existing : ScriptableObject.CreateInstance<EventSO>();
 
-                so.eventText     = data.eventText;
-                so.totalPenalty  = data.penalty;
+                so.eventText    = data.eventText;
+                so.totalPenalty = data.penalty;
 
-                so.defaultPhraseStart    = data.defStart;
-                so.defaultPhrasePast     = data.defPhrasePast ?? "";
-                so.defaultHpWeight       = data.defHp;
-                so.defaultPowWeight      = data.defPow;
-                so.defaultSanWeight      = data.defSan;
+                so.actionVerb     = data.actionVerb;
+                so.actionVerbPast = data.actionVerbPast ?? "";
 
-                so.defaultPhraseEnd        = data.defEnd;
+                so.defaultApproachAdverb     = data.defApproach;
+                so.defaultApproachAdverbPast = data.defApproachPast ?? "";
+                so.defaultHpWeight           = data.defHp;
+                so.defaultPowWeight          = data.defPow;
+                so.defaultSanWeight          = data.defSan;
+
+                so.defaultSupportAdverb    = data.defSupport;
                 so.defaultPenaltyReduction = data.defReduction;
 
-                so.baseChance = data.baseChance;
+                so.baseChance     = data.baseChance;
                 so.favorableBonus = data.favorableBonus;
                 so.favorableWords.Clear();
                 if (data.favorableKeys != null)

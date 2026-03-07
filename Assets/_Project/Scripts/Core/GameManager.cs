@@ -11,12 +11,12 @@ namespace Story
 {
     /// <summary>
     /// Центральный оркестратор игры.
-    /// Flow: день → событие → кнопка с фразой (intent+action) → исход → слова → след. день.
+    /// Flow: день → событие → кнопка с фразой (actionVerb + approach + support) → исход → карточки → след. день.
     ///
     /// ActionButton показывает:
-    ///   • Event-фаза:   составная фраза ("Молча пройти мимо")
-    ///   • Outcome-фаза: "Продолжить"
-    ///   • Game Over:    "Заново"
+    ///   • Event-фаза:   составная фраза («Пройти осторожно силой»)
+    ///   • Outcome-фаза: «Продолжить»
+    ///   • Game Over:    «Заново»
     /// </summary>
     public class GameManager : MonoBehaviour
     {
@@ -158,7 +158,7 @@ namespace Story
             actionStats.UpdatePenalty(dHp, dPow, dSan);
         }
 
-        /// <summary>При наведении на слово в инвентаре — превью фразы + шанса + штрафа.</summary>
+        /// <summary>При наведении на карточку в инвентаре — превью фразы + шанса + штрафа.</summary>
         private void OnHoverUpdatePhrase(WordSO hoveredWord)
         {
             if (_currentLoopEvent == null) return;
@@ -172,48 +172,48 @@ namespace Story
 
             var ev = _currentLoopEvent;
 
-            // Определяем verb и noun «как если бы» hovered слово было активировано
-            string verbPart = ev.defaultPhraseStart;
-            string nounPart = ev.defaultPhraseEnd;
-            string verbKey  = null;
-            string nounKey  = null;
+            // Определяем approach и support «как если бы» hovered карточка была активирована
+            string approachPart = ev.defaultApproachAdverb;
+            string supportPart  = ev.defaultSupportAdverb;
+            string approachKey  = null;
+            string supportKey   = null;
 
             if (wordInventory != null)
             {
-                var activeVerb = wordInventory.GetActive(WordType.Verb);
-                if (activeVerb != null && !string.IsNullOrEmpty(activeVerb.phraseStart))
+                var activeApproach = wordInventory.GetActive(WordType.Approach);
+                if (activeApproach != null && !string.IsNullOrEmpty(activeApproach.approachAdverb))
                 {
-                    verbPart = activeVerb.phraseStart;
-                    verbKey  = activeVerb.key;
+                    approachPart = activeApproach.approachAdverb;
+                    approachKey  = activeApproach.key;
                 }
 
-                var activeNoun = wordInventory.GetActive(WordType.Noun);
-                if (activeNoun != null && !string.IsNullOrEmpty(activeNoun.phraseEnd))
+                var activeSupport = wordInventory.GetActive(WordType.Support);
+                if (activeSupport != null && !string.IsNullOrEmpty(activeSupport.supportAdverb))
                 {
-                    nounPart = activeNoun.phraseEnd;
-                    nounKey  = activeNoun.key;
+                    supportPart = activeSupport.supportAdverb;
+                    supportKey  = activeSupport.key;
                 }
             }
 
-            // Hovered слово подсвечивается gold и замещает свой тип
-            if (hoveredWord.type == WordType.Verb && !string.IsNullOrEmpty(hoveredWord.phraseStart))
+            // Hovered карточка подсвечивается gold и замещает свой тип
+            if (hoveredWord.type == WordType.Approach && !string.IsNullOrEmpty(hoveredWord.approachAdverb))
             {
-                verbPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseStart}</color>";
-                verbKey  = hoveredWord.key;
+                approachPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.approachAdverb}</color>";
+                approachKey  = hoveredWord.key;
             }
-            else if (hoveredWord.type == WordType.Noun && !string.IsNullOrEmpty(hoveredWord.phraseEnd))
+            else if (hoveredWord.type == WordType.Support && !string.IsNullOrEmpty(hoveredWord.supportAdverb))
             {
-                nounPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.phraseEnd}</color>";
-                nounKey  = hoveredWord.key;
+                supportPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.supportAdverb}</color>";
+                supportKey  = hoveredWord.key;
             }
 
-            SetActionButtonText($"{verbPart} {nounPart}");
+            SetActionButtonText($"{ev.actionVerb} {approachPart} {supportPart}");
 
             if (!_statsVisible || actionStats == null) return;
 
             // Шанс с цветовым превью
             float currentChance = ev.CalcChance(wordInventory);
-            float previewChance = ev.CalcChanceForKeys(verbKey, nounKey);
+            float previewChance = ev.CalcChanceForKeys(approachKey, supportKey);
             int   pctNew        = Mathf.RoundToInt(previewChance * 100);
 
             if (previewChance > currentChance)
@@ -224,12 +224,12 @@ namespace Story
                 actionStats.UpdateChance(previewChance);
 
             // Штраф с hover-превью
-            WordSO previewVerb = wordInventory?.GetActive(WordType.Verb);
-            WordSO previewNoun = wordInventory?.GetActive(WordType.Noun);
-            if (hoveredWord.type == WordType.Verb) previewVerb = hoveredWord;
-            if (hoveredWord.type == WordType.Noun) previewNoun = hoveredWord;
+            WordSO previewApproach = wordInventory?.GetActive(WordType.Approach);
+            WordSO previewSupport  = wordInventory?.GetActive(WordType.Support);
+            if (hoveredWord.type == WordType.Approach) previewApproach = hoveredWord;
+            if (hoveredWord.type == WordType.Support)  previewSupport  = hoveredWord;
 
-            ev.CalcDeltasForHover(previewVerb, previewNoun, out int dHp, out int dPow, out int dSan);
+            ev.CalcDeltasForHover(previewApproach, previewSupport, out int dHp, out int dPow, out int dSan);
             actionStats.UpdatePenalty(dHp, dPow, dSan);
         }
 
@@ -294,17 +294,17 @@ namespace Story
                     if (actionButton != null) actionButton.Interactable = false;
                     HideStats();
 
-                    // 5. Рассчитать nature ПЕРЕД удалением слов
+                    // 5. Рассчитать исход ПЕРЕД удалением карточек
                     bool isPositive = ev.RollOutcome(wordInventory, gameState.rng);
 
-                    // 6. Применить intent+action + потратить активные слова
-                    var usedVerb = wordInventory?.GetActive(WordType.Verb);
-                    var usedNoun = wordInventory?.GetActive(WordType.Noun);
+                    // 6. Применить approach+support + потратить активные карточки
+                    var usedApproach = wordInventory?.GetActive(WordType.Approach);
+                    var usedSupport  = wordInventory?.GetActive(WordType.Support);
 
                     bool gameOver = ChoiceProcessor.Process(ev, gameState, stats, endings, wordInventory);
 
-                    if (usedVerb != null) wordInventory.Remove(usedVerb);
-                    if (usedNoun != null) wordInventory.Remove(usedNoun);
+                    if (usedApproach != null) wordInventory.Remove(usedApproach);
+                    if (usedSupport  != null) wordInventory.Remove(usedSupport);
 
                     gameState.RaiseChanged();
 
@@ -324,7 +324,7 @@ namespace Story
                     else
                         gameState.SetFlag(ev.setsFlagOnNegative);
 
-                    string outcomeRaw = ev.BuildOutcome(usedVerb, usedNoun, isPositive);
+                    string outcomeRaw = ev.BuildOutcome(usedApproach, usedSupport, isPositive);
 
                     if (!string.IsNullOrWhiteSpace(outcomeRaw))
                     {
@@ -345,7 +345,7 @@ namespace Story
                             await mainTypewriter.PlayAsync(outcomeRaw, ct);
                         }
 
-                        // Кнопка "Продолжить"
+                        // Кнопка «Продолжить»
                         actionPanel?.SetActive(true);
                         if (actionButton != null) actionButton.Interactable = false;
                         if (actionTypewriter != null)

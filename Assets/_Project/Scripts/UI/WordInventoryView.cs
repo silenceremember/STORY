@@ -4,7 +4,7 @@ using Story.Data;
 namespace Story.UI
 {
     /// <summary>
-    /// Управляет двумя панелями слотов (глаголы и существительные).
+    /// Управляет двумя панелями слотов (подходы и опоры).
     /// Подписывается на WordInventorySO.OnChanged и перерисовывает слоты.
     /// </summary>
     public class WordInventoryView : MonoBehaviour
@@ -14,16 +14,16 @@ namespace Story.UI
         [SerializeField] private HoverWordChannelSO hoverChannel;
         [SerializeField] private EventWordHighlightView eventHighlight;
 
-        [Header("6 слотов — глаголы (слева)")]
-        [SerializeField] private WordSlotView[] verbSlots = new WordSlotView[6];
+        [Header("Подходы (слева)")]
+        [SerializeField] private WordSlotView[] approachSlots = new WordSlotView[6];
 
-        [Header("6 слотов — существительные (справа)")]
-        [SerializeField] private WordSlotView[] nounSlots = new WordSlotView[6];
+        [Header("Опоры (справа)")]
+        [SerializeField] private WordSlotView[] supportSlots = new WordSlotView[6];
 
         private void Awake()
         {
-            InitSlots(verbSlots);
-            InitSlots(nounSlots);
+            InitSlots(approachSlots);
+            InitSlots(supportSlots);
         }
 
         private void OnEnable()
@@ -56,8 +56,8 @@ namespace Story.UI
         {
             if (inventory == null) return;
 
-            RefreshSlots(verbSlots, inventory.verbs);
-            RefreshSlots(nounSlots,      inventory.nouns);
+            RefreshSlots(approachSlots, inventory.approaches);
+            RefreshSlots(supportSlots,  inventory.supports);
         }
 
         private static void RefreshSlots(WordSlotView[] views,

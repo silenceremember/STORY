@@ -19,40 +19,39 @@ MonoBehaviour:
     \u0438 \u0449\u0443\u0440\u0438\u0442\u0441\u044F: \xAB\u0411\u0435\u0440\u0438,
     \u043F\u0443\u0442\u043D\u0438\u043A, \u0434\u043E\u0440\u043E\u0433\u0430 \u0434\u043B\u0438\u043D\u043D\u0430\u044F.\xBB"
   totalPenalty: -8
-  defaultPhraseStart: "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C"
-  defaultPhrasePast: "\u043F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0448\u044C"
+  actionVerb: "\u0413\u043E\u0432\u043E\u0440\u0438\u0442\u044C"
+  actionVerbPast: "\u0433\u043E\u0432\u043E\u0440\u0438\u0448\u044C"
+  defaultApproachAdverb: "\u043E\u0442\u043A\u0440\u044B\u0442\u043E"
+  defaultApproachAdverbPast: "\u043E\u0442\u043A\u0440\u044B\u0442\u043E"
   defaultHpWeight: 1
   defaultPowWeight: 1
   defaultSanWeight: 0
-  defaultPhraseEnd: "\u043C\u043E\u043D\u0435\u0442\u044B"
+  defaultSupportAdverb: "\u0441\u043B\u043E\u0432\u043E\u043C"
   defaultPenaltyReduction: 3
   baseChance: 1
   favorableBonus: 0
   favorableWords:
-  - show
-  - use
-  - grab
-  - offer
-  - give
-  - raise
+  - open
+  - patient
+  - word
+  - knowledge
   positiveOutcomeText: "\u0438 \u0441\u0442\u0430\u0440\u0438\u043A \u043A\u0438\u0432\u0430\u0435\u0442:
     \xAB\u0411\u0435\u0440\u0438, \u044D\u0442\u043E \u0442\u0435\u0431\u0435 \u043F\u0440\u0438\u0433\u043E\u0434\u0438\u0442\u0441\u044F\xBB.
-    \u0422\u044B \u043D\u0430\u0445\u043E\u0434\u0438\u0448\u044C [noun] \u0438 [noun]."
+    \u0422\u044B \u043D\u0430\u0445\u043E\u0434\u0438\u0448\u044C [support] \u0438
+    [support]."
   negativeOutcomeText: "\u043D\u043E \u0441\u0442\u0430\u0440\u0438\u043A \u0432\u043E\u0440\u0447\u0438\u0442
     \u0438 \u043F\u0440\u044F\u0447\u0435\u0442 \u043B\u0443\u0447\u0448\u0435\u0435.
     \u0422\u044B \u0431\u0435\u0440\u0451\u0448\u044C, \u0447\u0442\u043E \u043E\u0441\u0442\u0430\u043B\u043E\u0441\u044C."
   rewardWordPool:
-  - {fileID: 11400000, guid: 9bb5786569e332242826d343f32107c5, type: 2}
-  - {fileID: 11400000, guid: ced37a4821b22dc42ac341e87679e1a7, type: 2}
-  - {fileID: 11400000, guid: b1352f5c24ee69b4891d3def8373ac59, type: 2}
+  - {fileID: 11400000, guid: f7d8283eac8318e40886dfc26733788a, type: 2}
+  - {fileID: 11400000, guid: f5fb42c59d62b0749975592317375200, type: 2}
+  - {fileID: 11400000, guid: 885a0898790708f41b7251641e84a02e, type: 2}
   eventWordPool:
-  - {fileID: 11400000, guid: 9bb5786569e332242826d343f32107c5, type: 2}
-  - {fileID: 11400000, guid: ced37a4821b22dc42ac341e87679e1a7, type: 2}
-  - {fileID: 11400000, guid: b1352f5c24ee69b4891d3def8373ac59, type: 2}
-  - {fileID: 11400000, guid: 11787e6fb6d4f374da0cfdadfbee36a4, type: 2}
-  - {fileID: 11400000, guid: 3f558758fb212d2459cde8eaed2b0f33, type: 2}
-  - {fileID: 11400000, guid: adad071b2fd398947a9701d344fa1a98, type: 2}
-  - {fileID: 11400000, guid: 71da8db2a7dd76a43be64a3c0a07e019, type: 2}
+  - {fileID: 11400000, guid: f7d8283eac8318e40886dfc26733788a, type: 2}
+  - {fileID: 11400000, guid: f5fb42c59d62b0749975592317375200, type: 2}
+  - {fileID: 11400000, guid: 885a0898790708f41b7251641e84a02e, type: 2}
+  - {fileID: 11400000, guid: df9769646802f0a4095e31865599a2e2, type: 2}
+  - {fileID: 11400000, guid: 64ce2648bc876264da2616979e8d0bfb, type: 2}
   weight: 1
   dayMin: 1
   dayMax: 1

@@ -19,26 +19,28 @@ MonoBehaviour:
     \u0412\u0441\u0451, \u0447\u0442\u043E \u0442\u044B \u0441\u0434\u0435\u043B\u0430\u043B,
     \u043F\u0440\u0438\u0432\u0435\u043B\u043E \u0442\u0435\u0431\u044F \u0441\u044E\u0434\u0430."
   totalPenalty: -25
-  defaultPhraseStart: "\u041F\u0440\u0438\u043C\u0435\u043D\u0438\u0442\u044C"
-  defaultPhrasePast: "\u043F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u0448\u044C"
+  actionVerb: "\u0428\u0430\u0433\u043D\u0443\u0442\u044C"
+  actionVerbPast: "\u0448\u0430\u0433\u0430\u0435\u0448\u044C"
+  defaultApproachAdverb: "\u043E\u0442\u043A\u0440\u044B\u0442\u043E"
+  defaultApproachAdverbPast: "\u043E\u0442\u043A\u0440\u044B\u0442\u043E"
   defaultHpWeight: 2
   defaultPowWeight: 2
   defaultSanWeight: 2
-  defaultPhraseEnd: "\u0441\u0438\u043B\u0443"
+  defaultSupportAdverb: "\u0441\u0438\u043B\u043E\u0439"
   defaultPenaltyReduction: 0
   baseChance: 0.1
   favorableBonus: 0.25
   favorableWords:
-  - sword
-  - amulet
-  - book
-  - shield
-  - hurl
-  - throw
-  - use
-  - raise
-  - show
-  - grab
+  - careful
+  - open
+  - forceful
+  - desperate
+  - strength
+  - knowledge
+  - cunning
+  - word
+  - gold
+  - luck
   positiveOutcomeText: "\u0438 \u0441\u0432\u0435\u0442 \u043F\u0440\u043E\u0431\u0438\u0432\u0430\u0435\u0442\u0441\u044F
     \u0441\u043A\u0432\u043E\u0437\u044C \u0442\u044C\u043C\u0443. \u0422\u044B \u0432\u044B\u0436\u0438\u043B.
     \u041F\u0443\u0442\u044C \u043E\u043A\u043E\u043D\u0447\u0435\u043D."
@@ -48,9 +50,9 @@ MonoBehaviour:
     \u0448\u0451\u043B."
   rewardWordPool: []
   eventWordPool:
-  - {fileID: 11400000, guid: 9bb5786569e332242826d343f32107c5, type: 2}
-  - {fileID: 11400000, guid: bc229e48e90a4e147b34ca2f1df492a4, type: 2}
-  - {fileID: 11400000, guid: 2d71d209d746e6e4abcbaf511bb37315, type: 2}
+  - {fileID: 11400000, guid: 750c795273dbb6d4d80877648edba802, type: 2}
+  - {fileID: 11400000, guid: f5fb42c59d62b0749975592317375200, type: 2}
+  - {fileID: 11400000, guid: f7d8283eac8318e40886dfc26733788a, type: 2}
   weight: 1
   dayMin: 10
   dayMax: 10

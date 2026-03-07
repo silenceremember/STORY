@@ -18,41 +18,38 @@ MonoBehaviour:
     \xAB\u0422\u0440\u043E\u043B\u043B\u044C \u0433\u043B\u0443\u043F \u2014 \u0435\u0433\u043E
     \u043C\u043E\u0436\u043D\u043E \u043E\u0431\u043C\u0430\u043D\u0443\u0442\u044C.\xBB"
   totalPenalty: -20
-  defaultPhraseStart: "\u0411\u0440\u043E\u0441\u0438\u0442\u044C"
-  defaultPhrasePast: "\u0431\u0440\u043E\u0441\u0430\u0435\u0448\u044C"
+  actionVerb: "\u041F\u0440\u043E\u0439\u0442\u0438"
+  actionVerbPast: "\u043F\u0440\u043E\u0445\u043E\u0434\u0438\u0448\u044C"
+  defaultApproachAdverb: "\u0445\u0438\u0442\u0440\u043E"
+  defaultApproachAdverbPast: "\u0445\u0438\u0442\u0440\u043E"
   defaultHpWeight: 1
   defaultPowWeight: 2
   defaultSanWeight: 1
-  defaultPhraseEnd: "\u043F\u043E\u0434\u0430\u0447\u043A\u0443"
+  defaultSupportAdverb: "\u0445\u0438\u0442\u0440\u043E\u0441\u0442\u044C\u044E"
   defaultPenaltyReduction: 0
   baseChance: 0.2
   favorableBonus: 0.3
   favorableWords:
-  - rations
-  - amulet
-  - give
-  - offer
-  - toss
-  - show
-  - throw
-  - hurl
+  - secret
+  - cunning
+  - gold
+  - luck
   positiveOutcomeText: "\u0438 \u0442\u0440\u043E\u043B\u043B\u044C \u0445\u043E\u0445\u043E\u0447\u0435\u0442,
-    \u0448\u0432\u044B\u0440\u044F\u044F \u0442\u0435\u0431\u0435 [noun] \u0438 [noun].
-    \u041C\u043E\u0441\u0442 \u0441\u0432\u043E\u0431\u043E\u0434\u0435\u043D."
+    \u0448\u0432\u044B\u0440\u044F\u044F \u0442\u0435\u0431\u0435 [support] \u0438
+    [support]. \u041C\u043E\u0441\u0442 \u0441\u0432\u043E\u0431\u043E\u0434\u0435\u043D."
   negativeOutcomeText: "\u043D\u043E \u0442\u0440\u043E\u043B\u043B\u044C \u0440\u044B\u0447\u0438\u0442
     \u0438 \u0437\u0430\u043C\u0430\u0445\u0438\u0432\u0430\u0435\u0442\u0441\u044F.
     \u0422\u044B \u043F\u0435\u0440\u0435\u0431\u0435\u0433\u0430\u0435\u0448\u044C
     \u043C\u043E\u0441\u0442 \u0431\u0435\u0433\u043E\u043C."
   rewardWordPool:
-  - {fileID: 11400000, guid: ced37a4821b22dc42ac341e87679e1a7, type: 2}
-  - {fileID: 11400000, guid: 9bb5786569e332242826d343f32107c5, type: 2}
-  - {fileID: 11400000, guid: 86da3061e40cad846a1061ab1bce0213, type: 2}
+  - {fileID: 11400000, guid: f5fb42c59d62b0749975592317375200, type: 2}
+  - {fileID: 11400000, guid: 123a0a2d7ea227d438fda0d70ba55bc3, type: 2}
+  - {fileID: 11400000, guid: 95f28cc04fb62fe46bbe0b4f55ca118f, type: 2}
   eventWordPool:
-  - {fileID: 11400000, guid: ced37a4821b22dc42ac341e87679e1a7, type: 2}
-  - {fileID: 11400000, guid: 9bb5786569e332242826d343f32107c5, type: 2}
-  - {fileID: 11400000, guid: 86da3061e40cad846a1061ab1bce0213, type: 2}
-  - {fileID: 11400000, guid: 78ceba982fde47f44b9fc063c97c571e, type: 2}
-  - {fileID: 11400000, guid: adad071b2fd398947a9701d344fa1a98, type: 2}
+  - {fileID: 11400000, guid: f5fb42c59d62b0749975592317375200, type: 2}
+  - {fileID: 11400000, guid: 123a0a2d7ea227d438fda0d70ba55bc3, type: 2}
+  - {fileID: 11400000, guid: 95f28cc04fb62fe46bbe0b4f55ca118f, type: 2}
+  - {fileID: 11400000, guid: 6ad53983e062eac4297c5b94b6e5d702, type: 2}
   weight: 1
   dayMin: 7
   dayMax: 7

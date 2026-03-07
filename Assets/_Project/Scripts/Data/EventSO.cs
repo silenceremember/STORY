@@ -8,13 +8,15 @@ namespace Story.Data
     /// Событие дня. Содержит:
     ///   • eventText — статичный нарратив
     ///   • totalPenalty — общий штраф (отрицательное число)
-    ///   • defaultIntent / defaultAction — дефолтный составной ответ
-    ///   • favorableWords — ключи слов, дающих положительный исход
+    ///   • actionVerb — глагол события (напр. «Пройти»), задаёт смысл действия
+    ///   • defaultApproachAdverb / defaultSupportAdverb — дефолтный составной ответ
+    ///   • favorableWords — ключи карточек, дающих положительный исход
     ///   • positiveOutcomeText / negativeOutcomeText — последствия
-    ///   • rewardWordPool — пул слов-наград в outcome
+    ///   • rewardWordPool — пул карточек-наград в outcome
     ///
-    /// Игрок может заменить intent (verb из инвентаря) и action (noun),
+    /// Игрок может заменить подход (approach из инвентаря) и опору (support),
     /// тем самым изменяя распределение и величину штрафа.
+    /// Фраза на кнопке: "{actionVerb} {approachAdverb} {supportAdverb}"
     /// </summary>
     [CreateAssetMenu(fileName = "Event_New", menuName = "Story/Event")]
     public class EventSO : ScriptableObject
@@ -28,44 +30,49 @@ namespace Story.Data
         [Tooltip("Общий штраф события (отрицательное число, напр. -15)")]
         public int totalPenalty = -15;
 
-        [Header("Дефолтный ответ (всегда verb + noun)")]
-        [Tooltip("Инфинитив глагола по умолчанию, напр. «Осмотреть»")]
-        public string defaultPhraseStart = "Осмотреть";
-        [Tooltip("2-е лицо наст. вр., напр. «осматриваешь» — для outcome")]
-        public string defaultPhrasePast = "осматриваешь";
+        [Header("Дефолтный ответ — глагол события + подход + опора")]
+        [Tooltip("Глагол события (контекст), напр. «Пройти» — задаётся автором события")]
+        public string actionVerb = "Пройти";
+        [Tooltip("Глагол события в прошедшем контексте, напр. «прошёл» — для outcome")]
+        public string actionVerbPast = "прошёл";
+
+        [Tooltip("Наречие подхода по умолчанию, напр. «осторожно»")]
+        public string defaultApproachAdverb     = "осторожно";
+        [Tooltip("Наречие подхода по умолчанию для outcome, напр. «осторожно»")]
+        public string defaultApproachAdverbPast = "осторожно";
         [Tooltip("Распределение штрафа по HP (нормализуется вместе с pow/san)")]
         public float defaultHpWeight  = 1f;
         public float defaultPowWeight = 1f;
         public float defaultSanWeight = 1f;
 
-        [Tooltip("Объект по умолчанию в вин. падеже, напр. «тропу»")]
-        public string defaultPhraseEnd = "окрестности";
+        [Tooltip("Наречие опоры по умолчанию, напр. «силой»")]
+        public string defaultSupportAdverb = "силой";
         [Tooltip("Уменьшение штрафа по умолчанию")]
         public int defaultPenaltyReduction = 0;
 
         [Header("Исход — вероятности")]
-        [Tooltip("Базовый шанс успеха без слов (0..1)")]
+        [Tooltip("Базовый шанс успеха без карточек (0..1)")]
         [Range(0f, 1f)]
         public float baseChance = 0.3f;
-        [Tooltip("Бонус за каждое подходящее слово (0..1)")]
+        [Tooltip("Бонус за каждую подходящую карточку (0..1)")]
         [Range(0f, 1f)]
         public float favorableBonus = 0.3f;
-        [Tooltip("Ключи слов, повышающих шанс в ЭТОМ событии")]
+        [Tooltip("Ключи карточек, повышающих шанс в ЭТОМ событии")]
         public List<string> favorableWords = new();
 
         [TextArea(2, 4)]
-        [Tooltip("Положительный исход. Может содержать [verb]/[noun] для наград")]
+        [Tooltip("Положительный исход. Может содержать [approach]/[support] для наград")]
         public string positiveOutcomeText = "";
         [TextArea(2, 4)]
         [Tooltip("Отрицательный исход (без наград)")]
         public string negativeOutcomeText = "";
 
-        [Header("Пул слов-наград")]
-        [Tooltip("Слова для [verb]/[noun] токенов в positiveOutcomeText")]
+        [Header("Пул карточек-наград")]
+        [Tooltip("Карточки для [approach]/[support] токенов в positiveOutcomeText")]
         public List<WordSO> rewardWordPool = new();
 
-        [Header("Пул слов для отображения")]
-        [Tooltip("Все слова из пула события")]
+        [Header("Пул карточек для отображения")]
+        [Tooltip("Все карточки из пула события")]
         public List<WordSO> eventWordPool = new();
 
         [Tooltip("Чем выше вес, тем чаще событие выпадает")]
@@ -101,26 +108,26 @@ namespace Story.Data
             int matches = 0;
             if (inventory != null && favorableWords != null && favorableWords.Count > 0)
             {
-                var verb = inventory.GetActive(WordType.Verb);
-                if (verb != null && favorableWords.Contains(verb.key)) matches++;
+                var approach = inventory.GetActive(WordType.Approach);
+                if (approach != null && favorableWords.Contains(approach.key)) matches++;
 
-                var noun = inventory.GetActive(WordType.Noun);
-                if (noun != null && favorableWords.Contains(noun.key)) matches++;
+                var support = inventory.GetActive(WordType.Support);
+                if (support != null && favorableWords.Contains(support.key)) matches++;
             }
             float chance = baseChance + matches * favorableBonus;
             return Mathf.Clamp(chance, 0f, 0.95f);
         }
 
         /// <summary>
-        /// Вычисляет шанс для произвольных verb/noun ключей (для превью при hover).
+        /// Вычисляет шанс для произвольных approach/support ключей (для превью при hover).
         /// </summary>
-        public float CalcChanceForKeys(string verbKey, string nounKey)
+        public float CalcChanceForKeys(string approachKey, string supportKey)
         {
             int matches = 0;
             if (favorableWords != null && favorableWords.Count > 0)
             {
-                if (!string.IsNullOrEmpty(verbKey) && favorableWords.Contains(verbKey)) matches++;
-                if (!string.IsNullOrEmpty(nounKey) && favorableWords.Contains(nounKey)) matches++;
+                if (!string.IsNullOrEmpty(approachKey) && favorableWords.Contains(approachKey)) matches++;
+                if (!string.IsNullOrEmpty(supportKey)  && favorableWords.Contains(supportKey))  matches++;
             }
             float chance = baseChance + matches * favorableBonus;
             return Mathf.Clamp(chance, 0f, 0.95f);
@@ -137,56 +144,56 @@ namespace Story.Data
 
         /// <summary>
         /// Возвращает составную фразу для кнопки действия.
-        /// Всегда verb + noun. Игрок заменяет каждую часть независимо.
-        ///   0 слов → defaultPhraseStart + defaultPhraseEnd
-        ///   verb  → verb.phraseStart + defaultPhraseEnd
-        ///   noun  → defaultPhraseStart + noun.phraseEnd
-        ///   оба   → verb.phraseStart + noun.phraseEnd
+        /// Формат: "{actionVerb} {approachAdverb} {supportAdverb}"
+        ///   0 карточек → actionVerb + defaultApproachAdverb + defaultSupportAdverb
+        ///   approach  → verb + approach.approachAdverb + defaultSupportAdverb
+        ///   support   → verb + defaultApproachAdverb + support.supportAdverb
+        ///   оба       → verb + approach.approachAdverb + support.supportAdverb
         /// </summary>
         public string BuildPhrase(WordInventorySO inventory)
         {
-            string verbPart = defaultPhraseStart;
-            string nounPart = defaultPhraseEnd;
+            string approachPart = defaultApproachAdverb;
+            string supportPart  = defaultSupportAdverb;
 
             if (inventory != null)
             {
-                var activeVerb = inventory.GetActive(WordType.Verb);
-                if (activeVerb != null && !string.IsNullOrEmpty(activeVerb.phraseStart))
-                    verbPart = activeVerb.phraseStart;
+                var activeApproach = inventory.GetActive(WordType.Approach);
+                if (activeApproach != null && !string.IsNullOrEmpty(activeApproach.approachAdverb))
+                    approachPart = activeApproach.approachAdverb;
 
-                var activeNoun = inventory.GetActive(WordType.Noun);
-                if (activeNoun != null && !string.IsNullOrEmpty(activeNoun.phraseEnd))
-                    nounPart = activeNoun.phraseEnd;
+                var activeSupport = inventory.GetActive(WordType.Support);
+                if (activeSupport != null && !string.IsNullOrEmpty(activeSupport.supportAdverb))
+                    supportPart = activeSupport.supportAdverb;
             }
 
-            return $"{verbPart} {nounPart}";
+            return $"{actionVerb} {approachPart} {supportPart}";
         }
 
         /// <summary>
         /// Строит outcome-текст с описанием действия и последствием.
-        /// activeVerb/activeNoun передаются явно (т.к. к моменту outcome они уже удалены из инвентаря).
+        /// activeApproach/activeSupport передаются явно (т.к. к моменту outcome они уже удалены).
         /// </summary>
-        public string BuildOutcome(WordSO activeVerb, WordSO activeNoun, bool isPositive)
+        public string BuildOutcome(WordSO activeApproach, WordSO activeSupport, bool isPositive)
         {
-            string action = BuildActionDescription(activeVerb, activeNoun);
+            string action      = BuildActionDescription(activeApproach, activeSupport);
             string consequence = isPositive ? positiveOutcomeText : negativeOutcomeText;
             return $"{action} {consequence}";
         }
 
-        private string BuildActionDescription(WordSO verb, WordSO noun)
+        private string BuildActionDescription(WordSO approach, WordSO support)
         {
-            string verbPast = defaultPhrasePast;
-            string nounPart = defaultPhraseEnd;
+            string approachPart = defaultApproachAdverbPast;
+            string supportPart  = defaultSupportAdverb;
 
-            if (verb != null && !string.IsNullOrEmpty(verb.phrasePast))
-                verbPast = verb.phrasePast;
-            if (noun != null && !string.IsNullOrEmpty(noun.phraseEnd))
-                nounPart = noun.phraseEnd;
+            if (approach != null && !string.IsNullOrEmpty(approach.approachAdverbPast))
+                approachPart = approach.approachAdverbPast;
+            if (support != null && !string.IsNullOrEmpty(support.supportAdverb))
+                supportPart = support.supportAdverb;
 
-            return $"Ты {verbPast} {nounPart},";
+            return $"Ты {actionVerbPast} {approachPart} {supportPart},";
         }
 
-        /// <summary>Вычисляет итоговые дельты с учётом активных слов.</summary>
+        /// <summary>Вычисляет итоговые дельты с учётом активных карточек.</summary>
         public void CalcDeltas(WordInventorySO inventory,
                                out int dHp, out int dPow, out int dSan)
         {
@@ -196,21 +203,21 @@ namespace Story.Data
 
             if (inventory != null)
             {
-                var activeVerb = inventory.GetActive(WordType.Verb);
-                if (activeVerb != null)
+                var activeApproach = inventory.GetActive(WordType.Approach);
+                if (activeApproach != null)
                 {
-                    wHp  = activeVerb.hpWeight;
-                    wPow = activeVerb.powWeight;
-                    wSan = activeVerb.sanWeight;
+                    wHp  = activeApproach.hpWeight;
+                    wPow = activeApproach.powWeight;
+                    wSan = activeApproach.sanWeight;
                 }
             }
 
             int reduction = defaultPenaltyReduction;
             if (inventory != null)
             {
-                var activeNoun = inventory.GetActive(WordType.Noun);
-                if (activeNoun != null)
-                    reduction = activeNoun.penaltyReduction;
+                var activeSupport = inventory.GetActive(WordType.Support);
+                if (activeSupport != null)
+                    reduction = activeSupport.penaltyReduction;
             }
 
             int effectivePenalty = totalPenalty + Mathf.Abs(reduction);
@@ -224,15 +231,15 @@ namespace Story.Data
             dSan = Mathf.RoundToInt(effectivePenalty * (wSan / total));
         }
 
-        /// <summary>Вычисляет дельты для конкретного глагола и существительного (для hover-превью).</summary>
-        public void CalcDeltasForHover(WordSO verb, WordSO noun,
+        /// <summary>Вычисляет дельты для конкретного подхода и опоры (для hover-превью).</summary>
+        public void CalcDeltasForHover(WordSO approach, WordSO support,
                                        out int dHp, out int dPow, out int dSan)
         {
-            float wHp  = verb != null ? verb.hpWeight  : defaultHpWeight;
-            float wPow = verb != null ? verb.powWeight : defaultPowWeight;
-            float wSan = verb != null ? verb.sanWeight : defaultSanWeight;
+            float wHp  = approach != null ? approach.hpWeight  : defaultHpWeight;
+            float wPow = approach != null ? approach.powWeight : defaultPowWeight;
+            float wSan = approach != null ? approach.sanWeight : defaultSanWeight;
 
-            int reduction = noun != null ? noun.penaltyReduction : defaultPenaltyReduction;
+            int reduction = support != null ? support.penaltyReduction : defaultPenaltyReduction;
 
             int effectivePenalty = totalPenalty + Mathf.Abs(reduction);
             if (effectivePenalty > 0) effectivePenalty = 0;

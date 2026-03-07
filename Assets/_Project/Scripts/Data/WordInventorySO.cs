@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Story.Data
 {
     /// <summary>
-    /// Runtime-инвентарь слов игрока.
-    /// Два списка до 6 слотов каждый (глаголы / существительные).
+    /// Runtime-инвентарь карточек игрока.
+    /// Два списка каждый (подходы / опоры).
     /// Все поля NonSerialized — сбрасываются при перезапуске через Clear().
     /// </summary>
     [CreateAssetMenu(fileName = "WordInventory", menuName = "Story/Word Inventory")]
@@ -14,11 +14,11 @@ namespace Story.Data
     {
         public const int MaxSlots = 6;
 
-        [NonSerialized] public List<WordSO> verbs = new();
-        [NonSerialized] public List<WordSO> nouns = new();
+        [NonSerialized] public List<WordSO> approaches = new();
+        [NonSerialized] public List<WordSO> supports   = new();
 
-        [NonSerialized] private WordSO _activeVerb;
-        [NonSerialized] private WordSO _activeNoun;
+        [NonSerialized] private WordSO _activeApproach;
+        [NonSerialized] private WordSO _activeSupport;
 
         public event Action OnChanged;
 
@@ -26,14 +26,14 @@ namespace Story.Data
 
         public void Clear()
         {
-            verbs       = new List<WordSO>();
-            nouns       = new List<WordSO>();
-            _activeVerb = null;
-            _activeNoun = null;
+            approaches      = new List<WordSO>();
+            supports        = new List<WordSO>();
+            _activeApproach = null;
+            _activeSupport  = null;
             OnChanged?.Invoke();
         }
 
-        /// <summary>Пытается добавить слово. Возвращает false если слот занят.</summary>
+        /// <summary>Пытается добавить карточку. Возвращает false если слот занят.</summary>
         public bool TryAdd(WordSO word)
         {
             if (word == null) return false;
@@ -49,48 +49,48 @@ namespace Story.Data
         {
             if (word == null) return;
             ListOf(word.type).Remove(word);
-            if (_activeVerb == word) _activeVerb = null;
-            if (_activeNoun == word) _activeNoun = null;
+            if (_activeApproach == word) _activeApproach = null;
+            if (_activeSupport  == word) _activeSupport  = null;
             OnChanged?.Invoke();
         }
 
         public bool IsFull(WordType type) => ListOf(type).Count >= MaxSlots;
 
         public List<WordSO> ListOf(WordType type) =>
-            type == WordType.Verb ? verbs : nouns;
+            type == WordType.Approach ? approaches : supports;
 
         // ── Active API ────────────────────────────────────────────────────
 
         /// <summary>
-        /// Переключает активное слово для своего типа.
-        /// Одновременно активен только 1 verb и 1 noun.
+        /// Переключает активную карточку для своего типа.
+        /// Одновременно активна только 1 approach и 1 support.
         /// </summary>
         public void ToggleActive(WordSO word)
         {
             if (word == null) return;
 
-            if (word.type == WordType.Verb)
-                _activeVerb = (_activeVerb == word) ? null : word;
+            if (word.type == WordType.Approach)
+                _activeApproach = (_activeApproach == word) ? null : word;
             else
-                _activeNoun = (_activeNoun == word) ? null : word;
+                _activeSupport = (_activeSupport == word) ? null : word;
 
             OnChanged?.Invoke();
         }
 
-        /// <summary>Возвращает текущее активное слово для этого типа (или null).</summary>
+        /// <summary>Возвращает текущую активную карточку для этого типа (или null).</summary>
         public WordSO GetActive(WordType type)
-            => type == WordType.Verb ? _activeVerb : _activeNoun;
+            => type == WordType.Approach ? _activeApproach : _activeSupport;
 
         public bool IsActive(WordSO word)
         {
             if (word == null) return false;
-            return word.type == WordType.Verb ? word == _activeVerb : word == _activeNoun;
+            return word.type == WordType.Approach ? word == _activeApproach : word == _activeSupport;
         }
 
         public void ClearActive()
         {
-            _activeVerb = null;
-            _activeNoun = null;
+            _activeApproach = null;
+            _activeSupport  = null;
             OnChanged?.Invoke();
         }
     }

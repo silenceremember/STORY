@@ -2,16 +2,16 @@ using UnityEngine;
 
 namespace Story.Data
 {
-    public enum WordType { Verb, Noun }
+    public enum WordType { Approach, Support }
 
     /// <summary>
-    /// Описывает одно слово (глагол или существительное).
+    /// Описывает одну карточку (подход или опора).
     ///
-    /// Verb → определяет «намерение» (intent):
-    ///   phraseStart (инфинитив глагола) + распределение штрафа (hpWeight/powWeight/sanWeight).
+    /// Approach → определяет «подход» (как действуешь):
+    ///   approachAdverb (наречие, напр. «Осторожно») + распределение штрафа (hpWeight/powWeight/sanWeight).
     ///
-    /// Noun → определяет «действие» (action):
-    ///   phraseEnd (объект в вин. падеже с контекстом) + уменьшение штрафа (penaltyReduction).
+    /// Support → определяет «опору» (на что опираешься):
+    ///   supportAdverb (наречие, напр. «Силой») + уменьшение штрафа (penaltyReduction).
     /// </summary>
     [CreateAssetMenu(fileName = "Word_New", menuName = "Story/Word")]
     public class WordSO : ScriptableObject
@@ -19,15 +19,15 @@ namespace Story.Data
         [Header("Идентификация")]
         [Tooltip("Уникальный ключ")]
         public string key         = "";
-        [Tooltip("Текст, отображаемый в инвентарном слоте")]
+        [Tooltip("Текст, отображаемый в карточке инвентаря")]
         public string displayText = "Слово";
-        public WordType type      = WordType.Verb;
+        public WordType type      = WordType.Approach;
 
-        [Header("Intent — только для verb")]
-        [Tooltip("Инфинитив глагола, напр. «Метнуть»")]
-        public string phraseStart = "";
-        [Tooltip("2-е лицо наст. вр., напр. «швыряешь» — для outcome-текста")]
-        public string phrasePast = "";
+        [Header("Approach — только для карточек подхода")]
+        [Tooltip("Наречие подхода, напр. «Осторожно» — для кнопки действия")]
+        public string approachAdverb     = "";
+        [Tooltip("Наречие подхода для outcome-текста, напр. «осторожно»")]
+        public string approachAdverbPast = "";
         [Tooltip("Доля штрафа → HP (нормализуется с pow/san)")]
         public float hpWeight  = 1f;
         [Tooltip("Доля штрафа → POW")]
@@ -35,9 +35,9 @@ namespace Story.Data
         [Tooltip("Доля штрафа → SAN")]
         public float sanWeight = 1f;
 
-        [Header("Action — только для noun")]
-        [Tooltip("Объект с контекстом в вин. падеже, напр. «острый кинжал»")]
-        public string phraseEnd = "";
+        [Header("Support — только для карточек опоры")]
+        [Tooltip("Наречие опоры, напр. «Силой» — для кнопки действия и outcome-текста")]
+        public string supportAdverb = "";
         [Tooltip("На сколько единиц уменьшается общий штраф при использовании")]
         public int penaltyReduction = 0;
 

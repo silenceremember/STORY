@@ -52,8 +52,18 @@ namespace Story.Editor
         }
 
         private static readonly string[] AllWordKeys = {
-            "careful","forceful","secret","open","patient","desperate",
-            "strength","cunning","gold","word","knowledge","luck"
+            // Подходы: Physical
+            "forceful","desperate","defiant",
+            // Подходы: Mental
+            "careful","patient","cold",
+            // Подходы: Social
+            "secret","open","silent",
+            // Опоры: Physical
+            "strength","pain","luck",
+            // Опоры: Mental
+            "knowledge","cunning","memory",
+            // Опоры: Social
+            "word","gold","name"
         };
 
         // ═════════════════════════════════════════════════════════════════

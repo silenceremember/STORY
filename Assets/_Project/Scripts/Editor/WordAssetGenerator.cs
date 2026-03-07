@@ -57,26 +57,53 @@ namespace Story.Editor
                 approachAdverb="отчаянно",   approachAdverbPast="отчаянно",
                 hpW=3f, powW=3f, sanW=1f, archetype=WordArchetype.Physical, chanceModifier=0.2f },
 
+            // Physical #3: дерзкий вызов — между напролом и отчаянно по риску
+            new WordData { key="defiant",    display="Дерзко",     type=WordType.Approach,
+                approachAdverb="дерзко",     approachAdverbPast="дерзко",
+                hpW=2f, powW=2f, sanW=0f, archetype=WordArchetype.Physical, chanceModifier=0.1f },
+
+            // Mental #3: холодный расчёт без эмоций (убрали «Хитро» — конфликт с опорой «Хитростью»)
+            new WordData { key="cold",       display="Холодно",    type=WordType.Approach,
+                approachAdverb="холодно",    approachAdverbPast="холодно",
+                hpW=0f, powW=1f, sanW=2f, archetype=WordArchetype.Mental, chanceModifier=0.12f },
+
+            // Social #3: безмолвное действие — парадокс мира Феррум Мора
+            new WordData { key="silent",     display="Молча",      type=WordType.Approach,
+                approachAdverb="молча",      approachAdverbPast="молча",
+                hpW=0f, powW=1f, sanW=2f, archetype=WordArchetype.Social, chanceModifier=0.08f },
+
             // ── Опоры (Support) ───────────────────────────────────────────
             // supportAdverb = наречие на кнопке и в outcome
             // reduction = уменьшение штрафа
             new WordData { key="strength",   display="Силой",      type=WordType.Support,
                 supportAdverb="силой",      reduction=3, archetype=WordArchetype.Physical, chanceModifier=0.05f },
 
-            new WordData { key="cunning",    display="Хитростью",  type=WordType.Support,
-                supportAdverb="хитростью",  reduction=4, archetype=WordArchetype.Mental, chanceModifier=0.1f },
+            // Physical #2: через боль — высокий риск, самопожертвование
+            new WordData { key="pain",       display="Болью",      type=WordType.Support,
+                supportAdverb="болью",      reduction=3, archetype=WordArchetype.Physical, chanceModifier=0.08f },
 
-            new WordData { key="gold",       display="Золотом",    type=WordType.Support,
-                supportAdverb="золотом",    reduction=6, archetype=WordArchetype.Social, chanceModifier=0.05f },
-
-            new WordData { key="word",       display="Словом",     type=WordType.Support,
-                supportAdverb="словом",     reduction=4, archetype=WordArchetype.Social, chanceModifier=0.1f },
+            new WordData { key="luck",       display="Удачей",     type=WordType.Support,
+                supportAdverb="удачей",     reduction=2, archetype=WordArchetype.Physical, chanceModifier=0.15f },
 
             new WordData { key="knowledge",  display="Знанием",    type=WordType.Support,
                 supportAdverb="знанием",    reduction=5, archetype=WordArchetype.Mental, chanceModifier=0.1f },
 
-            new WordData { key="luck",       display="Удачей",     type=WordType.Support,
-                supportAdverb="удачей",     reduction=2, archetype=WordArchetype.Physical, chanceModifier=0.15f },
+            new WordData { key="cunning",    display="Хитростью",  type=WordType.Support,
+                supportAdverb="хитростью",  reduction=4, archetype=WordArchetype.Mental, chanceModifier=0.1f },
+
+            // Mental #3: через память прошлого — нарративная опора
+            new WordData { key="memory",     display="Памятью",    type=WordType.Support,
+                supportAdverb="памятью",    reduction=4, archetype=WordArchetype.Mental, chanceModifier=0.08f },
+
+            new WordData { key="word",       display="Словом",     type=WordType.Support,
+                supportAdverb="словом",     reduction=4, archetype=WordArchetype.Social, chanceModifier=0.1f },
+
+            new WordData { key="gold",       display="Золотом",    type=WordType.Support,
+                supportAdverb="золотом",    reduction=6, archetype=WordArchetype.Social, chanceModifier=0.05f },
+
+            // Social #3: через авторитет имени — редкое, только за успех в поздних событиях
+            new WordData { key="name",       display="Именем",     type=WordType.Support,
+                supportAdverb="именем",     reduction=5, archetype=WordArchetype.Social, chanceModifier=0.12f },
         };
 
         // ── Меню ────────────────────────────────────────────────────────────

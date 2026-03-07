@@ -15,6 +15,8 @@ MonoBehaviour:
   key: luck
   displayText: "\u0423\u0434\u0430\u0447\u0435\u0439"
   type: 1
+  archetype: 0
+  chanceModifier: 0.15
   approachAdverb: 
   approachAdverbPast: 
   hpWeight: 0
@@ -22,4 +24,3 @@ MonoBehaviour:
   sanWeight: 0
   supportAdverb: "\u0443\u0434\u0430\u0447\u0435\u0439"
   penaltyReduction: 2
-  nature: 0

@@ -5,17 +5,44 @@ using UnityEngine;
 namespace Story.Data
 {
     /// <summary>
+    /// Запись синергии: конкретная пара архетипов (Approach × Support)
+    /// даёт собственный исход — независимо от базового успех/провал.
+    ///
+    /// bonusChance — дополнительный шанс за правильную комбинацию.
+    /// positiveOutcomeText / negativeOutcomeText — кастомный текст исхода
+    ///   (если пусто — используется дефолтный текст события).
+    /// </summary>
+    [Serializable]
+    public class SynergyEntry
+    {
+        [Tooltip("Архетип карточки подхода")]
+        public WordArchetype approachArchetype = WordArchetype.Physical;
+        [Tooltip("Архетип карточки опоры")]
+        public WordArchetype supportArchetype  = WordArchetype.Physical;
+
+        [Tooltip("Дополнительный бонус к шансу за эту синергию")]
+        [Range(-0.3f, 0.3f)]
+        public float bonusChance = 0f;
+
+        [TextArea(2, 4)]
+        [Tooltip("Текст при положительном исходе. Пусто = дефолтный positiveOutcomeText события.")]
+        public string positiveOutcomeText = "";
+        [TextArea(2, 4)]
+        [Tooltip("Текст при отрицательном исходе. Пусто = дефолтный negativeOutcomeText события.")]
+        public string negativeOutcomeText = "";
+    }
+
+    /// <summary>
     /// Событие дня. Содержит:
     ///   • eventText — статичный нарратив
     ///   • totalPenalty — общий штраф (отрицательное число)
-    ///   • actionVerb — глагол события (напр. «Пройти»), задаёт смысл действия
+    ///   • actionVerb — глагол события (напр. «Пройти»)
     ///   • defaultApproachAdverb / defaultSupportAdverb — дефолтный составной ответ
-    ///   • favorableWords — ключи карточек, дающих положительный исход
-    ///   • positiveOutcomeText / negativeOutcomeText — последствия
+    ///   • positiveOutcomeText / negativeOutcomeText — дефолтные последствия
+    ///   • synergies — пары архетипов с собственным исходом и бонусом к шансу
     ///   • rewardWordPool — пул карточек-наград в outcome
     ///
-    /// Игрок может заменить подход (approach из инвентаря) и опору (support),
-    /// тем самым изменяя распределение и величину штрафа.
+    /// Шанс успеха = baseChance + approach.chanceModifier + support.chanceModifier + synergy.bonusChance
     /// Фраза на кнопке: "{actionVerb} {approachAdverb} {supportAdverb}"
     /// </summary>
     [CreateAssetMenu(fileName = "Event_New", menuName = "Story/Event")]
@@ -31,14 +58,14 @@ namespace Story.Data
         public int totalPenalty = -15;
 
         [Header("Дефолтный ответ — глагол события + подход + опора")]
-        [Tooltip("Глагол события (контекст), напр. «Пройти» — задаётся автором события")]
+        [Tooltip("Глагол события (контекст), напр. «Пройти»")]
         public string actionVerb = "Пройти";
-        [Tooltip("Глагол события в прошедшем контексте, напр. «прошёл» — для outcome")]
+        [Tooltip("Глагол события в прошедшем контексте, напр. «прошёл»")]
         public string actionVerbPast = "прошёл";
 
         [Tooltip("Наречие подхода по умолчанию, напр. «осторожно»")]
         public string defaultApproachAdverb     = "осторожно";
-        [Tooltip("Наречие подхода по умолчанию для outcome, напр. «осторожно»")]
+        [Tooltip("Наречие подхода по умолчанию для outcome")]
         public string defaultApproachAdverbPast = "осторожно";
         [Tooltip("Распределение штрафа по HP (нормализуется вместе с pow/san)")]
         public float defaultHpWeight  = 1f;
@@ -50,22 +77,22 @@ namespace Story.Data
         [Tooltip("Уменьшение штрафа по умолчанию")]
         public int defaultPenaltyReduction = 0;
 
-        [Header("Исход — вероятности")]
+        [Header("Исход — базовый шанс")]
         [Tooltip("Базовый шанс успеха без карточек (0..1)")]
         [Range(0f, 1f)]
         public float baseChance = 0.3f;
-        [Tooltip("Бонус за каждую подходящую карточку (0..1)")]
-        [Range(0f, 1f)]
-        public float favorableBonus = 0.3f;
-        [Tooltip("Ключи карточек, повышающих шанс в ЭТОМ событии")]
-        public List<string> favorableWords = new();
 
+        [Header("Исход — дефолтные тексты")]
         [TextArea(2, 4)]
-        [Tooltip("Положительный исход. Может содержать [approach]/[support] для наград")]
+        [Tooltip("Положительный исход (дефолт). Может содержать [approach]/[support] для наград.")]
         public string positiveOutcomeText = "";
         [TextArea(2, 4)]
-        [Tooltip("Отрицательный исход (без наград)")]
+        [Tooltip("Отрицательный исход (дефолт, без наград).")]
         public string negativeOutcomeText = "";
+
+        [Header("Синергии")]
+        [Tooltip("Пары архетипов, дающие особый исход и/или бонус к шансу")]
+        public List<SynergyEntry> synergies = new();
 
         [Header("Пул карточек-наград")]
         [Tooltip("Карточки для [approach]/[support] токенов в positiveOutcomeText")]
@@ -100,36 +127,44 @@ namespace Story.Data
         // ── Helpers ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// Вычисляет итоговый шанс положительного исхода для текущей комбинации.
-        /// baseChance + matchCount × favorableBonus, зажато в [0, 0.95].
+        /// Ищет синергию для данной пары Approach + Support.
+        /// Возвращает null, если карточка отсутствует или синергия не задана.
         /// </summary>
-        public float CalcChance(WordInventorySO inventory)
+        public SynergyEntry FindSynergy(WordSO approach, WordSO support)
         {
-            int matches = 0;
-            if (inventory != null && favorableWords != null && favorableWords.Count > 0)
-            {
-                var approach = inventory.GetActive(WordType.Approach);
-                if (approach != null && favorableWords.Contains(approach.key)) matches++;
-
-                var support = inventory.GetActive(WordType.Support);
-                if (support != null && favorableWords.Contains(support.key)) matches++;
-            }
-            float chance = baseChance + matches * favorableBonus;
-            return Mathf.Clamp(chance, 0f, 0.95f);
+            if (approach == null || support == null || synergies == null) return null;
+            foreach (var s in synergies)
+                if (s.approachArchetype == approach.archetype &&
+                    s.supportArchetype  == support.archetype)
+                    return s;
+            return null;
         }
 
         /// <summary>
-        /// Вычисляет шанс для произвольных approach/support ключей (для превью при hover).
+        /// Вычисляет итоговый шанс положительного исхода.
+        /// = baseChance + approach.chanceModifier + support.chanceModifier + synergy.bonusChance
+        /// Зажато в [0, 0.95].
         /// </summary>
-        public float CalcChanceForKeys(string approachKey, string supportKey)
+        public float CalcChance(WordInventorySO inventory)
         {
-            int matches = 0;
-            if (favorableWords != null && favorableWords.Count > 0)
-            {
-                if (!string.IsNullOrEmpty(approachKey) && favorableWords.Contains(approachKey)) matches++;
-                if (!string.IsNullOrEmpty(supportKey)  && favorableWords.Contains(supportKey))  matches++;
-            }
-            float chance = baseChance + matches * favorableBonus;
+            WordSO approach = inventory?.GetActive(WordType.Approach);
+            WordSO support  = inventory?.GetActive(WordType.Support);
+            return CalcChanceForWords(approach, support);
+        }
+
+        /// <summary>
+        /// Вычисляет шанс для конкретных WordSO (для hover-превью).
+        /// </summary>
+        public float CalcChanceForWords(WordSO approach, WordSO support)
+        {
+            float chance = baseChance;
+
+            if (approach != null) chance += approach.chanceModifier;
+            if (support  != null) chance += support.chanceModifier;
+
+            var synergy = FindSynergy(approach, support);
+            if (synergy != null) chance += synergy.bonusChance;
+
             return Mathf.Clamp(chance, 0f, 0.95f);
         }
 
@@ -145,10 +180,6 @@ namespace Story.Data
         /// <summary>
         /// Возвращает составную фразу для кнопки действия.
         /// Формат: "{actionVerb} {approachAdverb} {supportAdverb}"
-        ///   0 карточек → actionVerb + defaultApproachAdverb + defaultSupportAdverb
-        ///   approach  → verb + approach.approachAdverb + defaultSupportAdverb
-        ///   support   → verb + defaultApproachAdverb + support.supportAdverb
-        ///   оба       → verb + approach.approachAdverb + support.supportAdverb
         /// </summary>
         public string BuildPhrase(WordInventorySO inventory)
         {
@@ -170,13 +201,26 @@ namespace Story.Data
         }
 
         /// <summary>
-        /// Строит outcome-текст с описанием действия и последствием.
-        /// activeApproach/activeSupport передаются явно (т.к. к моменту outcome они уже удалены).
+        /// Строит outcome-текст.
+        /// Если для пары архетипов есть SynergyEntry с непустым текстом — берётся он,
+        /// иначе — дефолтный positiveOutcomeText / negativeOutcomeText события.
         /// </summary>
         public string BuildOutcome(WordSO activeApproach, WordSO activeSupport, bool isPositive)
         {
-            string action      = BuildActionDescription(activeApproach, activeSupport);
-            string consequence = isPositive ? positiveOutcomeText : negativeOutcomeText;
+            string action = BuildActionDescription(activeApproach, activeSupport);
+
+            var synergy = FindSynergy(activeApproach, activeSupport);
+
+            string consequence;
+            if (isPositive)
+                consequence = (synergy != null && !string.IsNullOrEmpty(synergy.positiveOutcomeText))
+                    ? synergy.positiveOutcomeText
+                    : positiveOutcomeText;
+            else
+                consequence = (synergy != null && !string.IsNullOrEmpty(synergy.negativeOutcomeText))
+                    ? synergy.negativeOutcomeText
+                    : negativeOutcomeText;
+
             return $"{action} {consequence}";
         }
 
@@ -197,38 +241,9 @@ namespace Story.Data
         public void CalcDeltas(WordInventorySO inventory,
                                out int dHp, out int dPow, out int dSan)
         {
-            float wHp  = defaultHpWeight;
-            float wPow = defaultPowWeight;
-            float wSan = defaultSanWeight;
-
-            if (inventory != null)
-            {
-                var activeApproach = inventory.GetActive(WordType.Approach);
-                if (activeApproach != null)
-                {
-                    wHp  = activeApproach.hpWeight;
-                    wPow = activeApproach.powWeight;
-                    wSan = activeApproach.sanWeight;
-                }
-            }
-
-            int reduction = defaultPenaltyReduction;
-            if (inventory != null)
-            {
-                var activeSupport = inventory.GetActive(WordType.Support);
-                if (activeSupport != null)
-                    reduction = activeSupport.penaltyReduction;
-            }
-
-            int effectivePenalty = totalPenalty + Mathf.Abs(reduction);
-            if (effectivePenalty > 0) effectivePenalty = 0;
-
-            float total = wHp + wPow + wSan;
-            if (total <= 0f) total = 1f;
-
-            dHp  = Mathf.RoundToInt(effectivePenalty * (wHp  / total));
-            dPow = Mathf.RoundToInt(effectivePenalty * (wPow / total));
-            dSan = Mathf.RoundToInt(effectivePenalty * (wSan / total));
+            WordSO approach = inventory?.GetActive(WordType.Approach);
+            WordSO support  = inventory?.GetActive(WordType.Support);
+            CalcDeltasForHover(approach, support, out dHp, out dPow, out dSan);
         }
 
         /// <summary>Вычисляет дельты для конкретного подхода и опоры (для hover-превью).</summary>

@@ -15,6 +15,8 @@ MonoBehaviour:
   key: gold
   displayText: "\u0417\u043E\u043B\u043E\u0442\u043E\u043C"
   type: 1
+  archetype: 2
+  chanceModifier: 0.05
   approachAdverb: 
   approachAdverbPast: 
   hpWeight: 0
@@ -22,4 +24,3 @@ MonoBehaviour:
   sanWeight: 0
   supportAdverb: "\u0437\u043E\u043B\u043E\u0442\u043E\u043C"
   penaltyReduction: 6
-  nature: 0.3

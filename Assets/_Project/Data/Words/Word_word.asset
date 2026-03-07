@@ -15,6 +15,8 @@ MonoBehaviour:
   key: word
   displayText: "\u0421\u043B\u043E\u0432\u043E\u043C"
   type: 1
+  archetype: 2
+  chanceModifier: 0.1
   approachAdverb: 
   approachAdverbPast: 
   hpWeight: 0
@@ -22,4 +24,3 @@ MonoBehaviour:
   sanWeight: 0
   supportAdverb: "\u0441\u043B\u043E\u0432\u043E\u043C"
   penaltyReduction: 4
-  nature: 0.7

@@ -24,7 +24,8 @@ namespace Story.Editor
             public string supportAdverb;
             public int reduction;
             // Sentiment
-            public float nature;
+            public WordArchetype archetype;
+            public float chanceModifier;
         }
 
         private static readonly WordData[] Words = new[]
@@ -34,48 +35,48 @@ namespace Story.Editor
             // hpW/powW/sanW = куда идёт штраф
             new WordData { key="careful",    display="Осторожно",  type=WordType.Approach,
                 approachAdverb="осторожно",  approachAdverbPast="осторожно",
-                hpW=1f, powW=0f, sanW=2f, nature= 0.2f },
+                hpW=1f, powW=0f, sanW=2f, archetype=WordArchetype.Mental, chanceModifier=0.1f },
 
             new WordData { key="forceful",   display="Напролом",   type=WordType.Approach,
                 approachAdverb="напролом",   approachAdverbPast="напролом",
-                hpW=3f, powW=2f, sanW=0f, nature=-0.3f },
+                hpW=3f, powW=2f, sanW=0f, archetype=WordArchetype.Physical, chanceModifier=0.15f },
 
             new WordData { key="secret",     display="Тайно",      type=WordType.Approach,
                 approachAdverb="тайно",      approachAdverbPast="тайно",
-                hpW=0f, powW=1f, sanW=2f, nature= 0.1f },
+                hpW=0f, powW=1f, sanW=2f, archetype=WordArchetype.Social, chanceModifier=0.05f },
 
             new WordData { key="open",       display="Открыто",    type=WordType.Approach,
                 approachAdverb="открыто",    approachAdverbPast="открыто",
-                hpW=1f, powW=1f, sanW=1f, nature= 0.4f },
+                hpW=1f, powW=1f, sanW=1f, archetype=WordArchetype.Social, chanceModifier=0.05f },
 
             new WordData { key="patient",    display="Терпеливо",  type=WordType.Approach,
                 approachAdverb="терпеливо",  approachAdverbPast="терпеливо",
-                hpW=0f, powW=0f, sanW=3f, nature= 0.5f },
+                hpW=0f, powW=0f, sanW=3f, archetype=WordArchetype.Mental, chanceModifier=0.05f },
 
             new WordData { key="desperate",  display="Отчаянно",   type=WordType.Approach,
                 approachAdverb="отчаянно",   approachAdverbPast="отчаянно",
-                hpW=3f, powW=3f, sanW=1f, nature=-0.5f },
+                hpW=3f, powW=3f, sanW=1f, archetype=WordArchetype.Physical, chanceModifier=0.2f },
 
             // ── Опоры (Support) ───────────────────────────────────────────
             // supportAdverb = наречие на кнопке и в outcome
             // reduction = уменьшение штрафа
             new WordData { key="strength",   display="Силой",      type=WordType.Support,
-                supportAdverb="силой",      reduction=3, nature=-0.2f },
+                supportAdverb="силой",      reduction=3, archetype=WordArchetype.Physical, chanceModifier=0.05f },
 
             new WordData { key="cunning",    display="Хитростью",  type=WordType.Support,
-                supportAdverb="хитростью",  reduction=4, nature= 0.1f },
+                supportAdverb="хитростью",  reduction=4, archetype=WordArchetype.Mental, chanceModifier=0.1f },
 
             new WordData { key="gold",       display="Золотом",    type=WordType.Support,
-                supportAdverb="золотом",    reduction=6, nature= 0.3f },
+                supportAdverb="золотом",    reduction=6, archetype=WordArchetype.Social, chanceModifier=0.05f },
 
             new WordData { key="word",       display="Словом",     type=WordType.Support,
-                supportAdverb="словом",     reduction=4, nature= 0.7f },
+                supportAdverb="словом",     reduction=4, archetype=WordArchetype.Social, chanceModifier=0.1f },
 
             new WordData { key="knowledge",  display="Знанием",    type=WordType.Support,
-                supportAdverb="знанием",    reduction=5, nature= 0.5f },
+                supportAdverb="знанием",    reduction=5, archetype=WordArchetype.Mental, chanceModifier=0.1f },
 
             new WordData { key="luck",       display="Удачей",     type=WordType.Support,
-                supportAdverb="удачей",     reduction=2, nature= 0.0f },
+                supportAdverb="удачей",     reduction=2, archetype=WordArchetype.Physical, chanceModifier=0.15f },
         };
 
         // ── Меню ────────────────────────────────────────────────────────────
@@ -116,8 +117,9 @@ namespace Story.Editor
                 so.supportAdverb    = data.supportAdverb ?? "";
                 so.penaltyReduction = data.reduction;
 
-                // Nature
-                so.nature = data.nature;
+                // Archetype & Chance
+                so.archetype       = data.archetype;
+                so.chanceModifier  = data.chanceModifier;
 
                 if (existing == null)
                     AssetDatabase.CreateAsset(so, path);

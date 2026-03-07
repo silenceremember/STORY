@@ -15,6 +15,8 @@ MonoBehaviour:
   key: desperate
   displayText: "\u041E\u0442\u0447\u0430\u044F\u043D\u043D\u043E"
   type: 0
+  archetype: 0
+  chanceModifier: 0.2
   approachAdverb: "\u043E\u0442\u0447\u0430\u044F\u043D\u043D\u043E"
   approachAdverbPast: "\u043E\u0442\u0447\u0430\u044F\u043D\u043D\u043E"
   hpWeight: 3
@@ -22,4 +24,3 @@ MonoBehaviour:
   sanWeight: 1
   supportAdverb: 
   penaltyReduction: 0
-  nature: -0.5

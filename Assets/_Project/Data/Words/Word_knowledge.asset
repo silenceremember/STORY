@@ -15,6 +15,8 @@ MonoBehaviour:
   key: knowledge
   displayText: "\u0417\u043D\u0430\u043D\u0438\u0435\u043C"
   type: 1
+  archetype: 1
+  chanceModifier: 0.1
   approachAdverb: 
   approachAdverbPast: 
   hpWeight: 0
@@ -22,4 +24,3 @@ MonoBehaviour:
   sanWeight: 0
   supportAdverb: "\u0437\u043D\u0430\u043D\u0438\u0435\u043C"
   penaltyReduction: 5
-  nature: 0.5

@@ -15,6 +15,8 @@ MonoBehaviour:
   key: cunning
   displayText: "\u0425\u0438\u0442\u0440\u043E\u0441\u0442\u044C\u044E"
   type: 1
+  archetype: 1
+  chanceModifier: 0.1
   approachAdverb: 
   approachAdverbPast: 
   hpWeight: 0
@@ -22,4 +24,3 @@ MonoBehaviour:
   sanWeight: 0
   supportAdverb: "\u0445\u0438\u0442\u0440\u043E\u0441\u0442\u044C\u044E"
   penaltyReduction: 4
-  nature: 0.1

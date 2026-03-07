@@ -5,13 +5,25 @@ namespace Story.Data
     public enum WordType { Approach, Support }
 
     /// <summary>
+    /// Архетип карточки — определяет синергию при комбинировании Approach + Support.
+    /// Physical  = сила, тело, прямое действие
+    /// Mental    = ум, хитрость, знание
+    /// Social    = речь, доверие, убеждение
+    /// Mystical  = магия, ритуал, неизведанное
+    /// </summary>
+    public enum WordArchetype { Physical, Mental, Social, Mystical }
+
+    /// <summary>
     /// Описывает одну карточку (подход или опора).
     ///
     /// Approach → определяет «подход» (как действуешь):
-    ///   approachAdverb (наречие, напр. «Осторожно») + распределение штрафа (hpWeight/powWeight/sanWeight).
+    ///   approachAdverb + распределение штрафа (hpWeight/powWeight/sanWeight) + chanceModifier.
     ///
     /// Support → определяет «опору» (на что опираешься):
-    ///   supportAdverb (наречие, напр. «Силой») + уменьшение штрафа (penaltyReduction).
+    ///   supportAdverb + уменьшение штрафа (penaltyReduction) + chanceModifier.
+    ///
+    /// archetype — архетип карточки для расчёта синергий (Approach.archetype × Support.archetype).
+    /// chanceModifier — базовый вклад карточки в шанс успеха (применяется всегда, для обоих типов).
     /// </summary>
     [CreateAssetMenu(fileName = "Word_New", menuName = "Story/Word")]
     public class WordSO : ScriptableObject
@@ -21,7 +33,13 @@ namespace Story.Data
         public string key         = "";
         [Tooltip("Текст, отображаемый в карточке инвентаря")]
         public string displayText = "Слово";
-        public WordType type      = WordType.Approach;
+        public WordType      type      = WordType.Approach;
+        public WordArchetype archetype = WordArchetype.Physical;
+
+        [Header("Шанс")]
+        [Tooltip("Базовый вклад карточки в шанс успеха (±). Работает для Approach и Support.")]
+        [Range(-0.3f, 0.3f)]
+        public float chanceModifier = 0f;
 
         [Header("Approach — только для карточек подхода")]
         [Tooltip("Наречие подхода, напр. «Осторожно» — для кнопки действия")]
@@ -40,10 +58,5 @@ namespace Story.Data
         public string supportAdverb = "";
         [Tooltip("На сколько единиц уменьшается общий штраф при использовании")]
         public int penaltyReduction = 0;
-
-        [Header("Настроение")]
-        [Tooltip("От -1 (агрессия) до +1 (помощь). Определяет positive/negative outcome.")]
-        [Range(-1f, 1f)]
-        public float nature = 0f;
     }
 }

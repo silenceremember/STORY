@@ -172,48 +172,33 @@ namespace Story
 
             var ev = _currentLoopEvent;
 
-            // Определяем approach и support «как если бы» hovered карточка была активирована
-            string approachPart = ev.defaultApproachAdverb;
-            string supportPart  = ev.defaultSupportAdverb;
-            string approachKey  = null;
-            string supportKey   = null;
+            // Какие карточки были бы активны, если hovered была бы применена
+            WordSO previewApproach = wordInventory?.GetActive(WordType.Approach);
+            WordSO previewSupport  = wordInventory?.GetActive(WordType.Support);
+            if (hoveredWord.type == WordType.Approach) previewApproach = hoveredWord;
+            if (hoveredWord.type == WordType.Support)  previewSupport  = hoveredWord;
 
-            if (wordInventory != null)
-            {
-                var activeApproach = wordInventory.GetActive(WordType.Approach);
-                if (activeApproach != null && !string.IsNullOrEmpty(activeApproach.approachAdverb))
-                {
-                    approachPart = activeApproach.approachAdverb;
-                    approachKey  = activeApproach.key;
-                }
+            // Текст фразы на кнопке
+            string approachPart = previewApproach != null && !string.IsNullOrEmpty(previewApproach.approachAdverb)
+                ? previewApproach.approachAdverb
+                : ev.defaultApproachAdverb;
+            string supportPart = previewSupport != null && !string.IsNullOrEmpty(previewSupport.supportAdverb)
+                ? previewSupport.supportAdverb
+                : ev.defaultSupportAdverb;
 
-                var activeSupport = wordInventory.GetActive(WordType.Support);
-                if (activeSupport != null && !string.IsNullOrEmpty(activeSupport.supportAdverb))
-                {
-                    supportPart = activeSupport.supportAdverb;
-                    supportKey  = activeSupport.key;
-                }
-            }
-
-            // Hovered карточка подсвечивается gold и замещает свой тип
+            // Hovered карточка подсвечивается gold
             if (hoveredWord.type == WordType.Approach && !string.IsNullOrEmpty(hoveredWord.approachAdverb))
-            {
                 approachPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.approachAdverb}</color>";
-                approachKey  = hoveredWord.key;
-            }
             else if (hoveredWord.type == WordType.Support && !string.IsNullOrEmpty(hoveredWord.supportAdverb))
-            {
                 supportPart = $"<color={OutcomeParser.ColorGold}>{hoveredWord.supportAdverb}</color>";
-                supportKey  = hoveredWord.key;
-            }
 
             SetActionButtonText($"{ev.actionVerb} {approachPart} {supportPart}");
 
             if (!_statsVisible || actionStats == null) return;
 
-            // Шанс с цветовым превью
+            // Шанс с цветовым превью (учитывает archetype для синергии)
             float currentChance = ev.CalcChance(wordInventory);
-            float previewChance = ev.CalcChanceForKeys(approachKey, supportKey);
+            float previewChance = ev.CalcChanceForWords(previewApproach, previewSupport);
             int   pctNew        = Mathf.RoundToInt(previewChance * 100);
 
             if (previewChance > currentChance)
@@ -224,11 +209,6 @@ namespace Story
                 actionStats.UpdateChance(previewChance);
 
             // Штраф с hover-превью
-            WordSO previewApproach = wordInventory?.GetActive(WordType.Approach);
-            WordSO previewSupport  = wordInventory?.GetActive(WordType.Support);
-            if (hoveredWord.type == WordType.Approach) previewApproach = hoveredWord;
-            if (hoveredWord.type == WordType.Support)  previewSupport  = hoveredWord;
-
             ev.CalcDeltasForHover(previewApproach, previewSupport, out int dHp, out int dPow, out int dSan);
             actionStats.UpdatePenalty(dHp, dPow, dSan);
         }

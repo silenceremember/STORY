@@ -28,19 +28,7 @@ MonoBehaviour:
   defaultSanWeight: 2
   defaultSupportAdverb: "\u0441\u0438\u043B\u043E\u0439"
   defaultPenaltyReduction: 0
-  baseChance: 0.1
-  favorableBonus: 0.25
-  favorableWords:
-  - careful
-  - open
-  - forceful
-  - desperate
-  - strength
-  - knowledge
-  - cunning
-  - word
-  - gold
-  - luck
+  baseChance: 0.15
   positiveOutcomeText: "\u0438 \u0441\u0432\u0435\u0442 \u043F\u0440\u043E\u0431\u0438\u0432\u0430\u0435\u0442\u0441\u044F
     \u0441\u043A\u0432\u043E\u0437\u044C \u0442\u044C\u043C\u0443. \u0422\u044B \u0432\u044B\u0436\u0438\u043B.
     \u041F\u0443\u0442\u044C \u043E\u043A\u043E\u043D\u0447\u0435\u043D."
@@ -48,6 +36,7 @@ MonoBehaviour:
     \u0442\u0435\u0431\u044F. \u0422\u044B \u0441\u0442\u0430\u043D\u043E\u0432\u0438\u0448\u044C\u0441\u044F
     \u0447\u0430\u0441\u0442\u044C\u044E \u0434\u043E\u0440\u043E\u0433\u0438, \u043A\u043E\u0442\u043E\u0440\u043E\u0439
     \u0448\u0451\u043B."
+  synergies: []
   rewardWordPool: []
   eventWordPool:
   - {fileID: 11400000, guid: 750c795273dbb6d4d80877648edba802, type: 2}

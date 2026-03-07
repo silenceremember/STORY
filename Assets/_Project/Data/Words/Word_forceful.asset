@@ -15,6 +15,8 @@ MonoBehaviour:
   key: forceful
   displayText: "\u041D\u0430\u043F\u0440\u043E\u043B\u043E\u043C"
   type: 0
+  archetype: 0
+  chanceModifier: 0.15
   approachAdverb: "\u043D\u0430\u043F\u0440\u043E\u043B\u043E\u043C"
   approachAdverbPast: "\u043D\u0430\u043F\u0440\u043E\u043B\u043E\u043C"
   hpWeight: 3
@@ -22,4 +24,3 @@ MonoBehaviour:
   sanWeight: 0
   supportAdverb: 
   penaltyReduction: 0
-  nature: -0.3

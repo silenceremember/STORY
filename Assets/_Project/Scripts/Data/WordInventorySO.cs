@@ -12,7 +12,7 @@ namespace Story.Data
     [CreateAssetMenu(fileName = "WordInventory", menuName = "Story/Word Inventory")]
     public class WordInventorySO : ScriptableObject
     {
-        public const int MaxSlots = 6;
+        public const int MaxSlots = 3;
 
         [NonSerialized] public List<WordSO> approaches = new();
         [NonSerialized] public List<WordSO> supports   = new();
